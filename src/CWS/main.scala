@@ -19,13 +19,7 @@ object main {
     result
   }
   def m = {
-    //println("Hello world")
-    //var p = new Point('喵')
-    //var q = new Seq('汪',1,2)
-    //print(p);
-    //print(q);
+    Reader.segRead("dat/ctb7_mz_seg.utf8")
     Reader.segRead("dat/ctb7_mz_pos.utf8")
-    print(Reader.segRead("dat/ctb7_mz_seg.utf8"))
-
   }
 }

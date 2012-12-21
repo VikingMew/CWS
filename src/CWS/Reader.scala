@@ -13,24 +13,36 @@ object Reader {
   def segRead(f:String) = {
     val source = scala.io.Source.fromFile(f)
     val lines = source.getLines()
-    var a = new ArrayBuffer[List[Point2]]()
-    var l = List[Point2]()
-    //val P1 = """(.) ([BIES])(?:_([A-Z]{1,3})?)""".r
+    var l = List[Array[Point2]]()
+    var a = ArrayBuffer[Point2]()
     for (x <- lines) {
       if(x.isEmpty) {
-        l = l.reverse
-        //println(l)
-        a append l
-        l =  List[Point2]()
+        l = a.toArray :: l
+        a =  new ArrayBuffer[Point2]()
       } else {
-        //val P1(c,p,t) = x
         if(x.length>3)
-          l = (new Point2(x.charAt(0),x.charAt(2),x.substring(4))) :: l
+          a.append((new Point2(x.charAt(0),x.charAt(2),x.substring(4))))
         else
-          l = (new Point2(x.charAt(0),x.charAt(2),"")) :: l
+          a.append((new Point2(x.charAt(0),x.charAt(2),"")))
       }
     }
     source.close ()
-    a
+    l.reverse
+  }
+  def seg2Read(f:String) = {
+    val source = scala.io.Source.fromFile(f)
+    val lines = source.getLines()
+    //var l = List[Array[Point2]]()
+    var a = ArrayBuffer[Point2]()
+    for (x <- lines) {
+      if(!x.isEmpty) {
+        if(x.length>3)
+          a.append((new Point2(x.charAt(0),x.charAt(2),x.substring(4))))
+        else
+          a.append((new Point2(x.charAt(0),x.charAt(2),"")))
+      }
+    }
+    source.close()
+    a.toArray
   }
 }
