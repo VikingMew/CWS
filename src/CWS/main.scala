@@ -9,7 +9,9 @@ package CWS
  */
 object main {
   def main(args:Array[String]) = {
-    time(m)
+    val l = time(m)
+    val h = l.head;
+    print(Feature.c(h,2,List(1,3))(h,2))
   }
   def time[A](a: => A) = {
     val now = System.nanoTime
