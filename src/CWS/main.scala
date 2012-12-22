@@ -10,18 +10,29 @@ package CWS
 object main {
   def main(args:Array[String]) = {
     val l = time(m)
-    val h = l.head;
-    print(Feature.c(h,2,List(1,3))(h,2))
+
   }
   def time[A](a: => A) = {
     val now = System.nanoTime
     val result = a
     val micros = (System.nanoTime - now).toDouble / 1000000
-    println("%f mseconds".format(micros))
+    println("\n%f mseconds".format(micros))
     result
   }
   def m = {
     Reader.segRead("dat/ctb7_mz_seg.utf8")
-    Reader.segRead("dat/ctb7_mz_pos.utf8")
+    val l = Reader.segRead("dat/ctb7_mz_pos.utf8")
+    val h = l.head;
+    l.map(x =>{
+      val t = Feature.c(x,2,List(1,3,5,7))
+      if(t != null) t(x,3) else null
+    })
+    val templatelist = List(('c',0),('c',1),('c',-1))
+    var t = new FeatureTemplate(templatelist)
+    //t.createFeature(h,2);
+    //t.createFeature(h,3);
+    //t.createFeature(h,2);
+    t.createFeature(l);
+    println(t.list)
   }
 }
