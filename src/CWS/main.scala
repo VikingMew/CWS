@@ -8,7 +8,7 @@ package CWS
  * To change this template use File | Settings | File Templates.
  */
 object main {
-  def main(args:Array[String]) = {
+  def main(args:Array[String])  {
     val l = time(m)
 
   }
@@ -19,20 +19,24 @@ object main {
     println("\n%f mseconds".format(micros))
     result
   }
-  def m = {
+  def m {
     Reader.segRead("dat/ctb7_mz_seg.utf8")
     val l = Reader.segRead("dat/ctb7_mz_pos.utf8")
-    val h = l.head;
-    l.map(x =>{
-      val t = Feature.c(x,2,List(1,3,5,7))
-      if(t != null) t(x,3) else null
-    })
+    val h = l.head
+//    l.map(x =>{
+//      val t = Feature.c(x,2,List(1,3,5,7))
+//      if(t != null) t(x,3) else null
+//    })
     val templatelist = List(('c',0),('u',0),('s',0))
     var t = new FeatureTemplate(templatelist)
-    t.createFeature(h);
-    println(t.list)
+    t.createFeature(h)
+    //println(t.list)
     //t.createFeature(l);
+    t.list.foreach(x =>{
+      val a = new Feature(x)
 
+      print(a.run(h,0))
+    })
     //println(t.list)
   }
 }

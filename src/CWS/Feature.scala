@@ -77,11 +77,9 @@ class FeatureTemplate(ta:List[Tuple2[Char,Int]]) {
               Tuple3("T" , x._1, x._2)
             else
               Tuple3("F" , x._1, x._2)
-            //Tuple3("", x._1, x._2)
           }
         }
         l = t :: l
-//        l = Tuple3(a(offset + x._2),x._1,x._2) :: l
       }
       l = l.reverse
       if (!list.contains(l))
@@ -101,19 +99,34 @@ class FeatureTemplate(ta:List[Tuple2[Char,Int]]) {
     a.map(x => createFeature(x))
     Unit
   }
+  def getFeatureFunc() = {
+    Unit
+  }
 }
-//class Feature(arg:List[Tuple3[String,Char,Int]]) {
-//  val a = arg
-//  def cal(b:Array[Point2],index2:Int) ={
-//    a.map().reduce(_&_)
-//  }
-//  def c(a:Point2)(b:Point2) = {
-//    if (a.c == b.c) 1 else 0
-//  }
-//  def t(a:Point2)(b:Point2) = {
-//    if (a.t == b.t) 1 else 0
-//  }
-//  def p(a:Point2)(b:Point2) = {
-//    if (a.p == b.p) 1 else 0
-//  }
-//}
+class Feature(carg:List[Tuple3[String,Char,Int]]) {
+  val arg = carg
+  def run(b:Array[Point2],index2:Int) = {
+    arg.map(x => cal(b,index2,x)).reduce(_&_)
+  }
+  def cal(b:Array[Point2],index2:Int,t:Tuple3[String,Char,Int]):Int = {
+    t._2 match {
+      case 'c' => {
+        if(t._1 contains b(index2+t._3).c) 1 else 0
+      }
+      case 't' => {
+        if(t._1 contains b(index2 + t._3).t) 1 else 0
+      }
+      case 'p' => {
+        if(t._1 contains b(index2+t._3).pos) 1 else 0
+      }
+      case 'u' => {
+        val v = if(""" ?「」，。《》、：""" contains b(index2 + t._3).c) 1 else 0
+        if ("T" contains t._1) v else 1 - v
+      }
+      case 's' => {
+        val v = if(b(index2 + t._3).t == 'S') 1 else 0
+        if ("T" contains t._1) v else 1 - v
+      }
+    }
+  }
+}
