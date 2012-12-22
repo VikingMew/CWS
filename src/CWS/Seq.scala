@@ -13,11 +13,11 @@ class Point(cc: Char, cp:Int = 0,ct:Int = 0) {
   var t = ct
   override def toString(): String = "(%c,%d,%d)".format(c,p,t)
 }
-class Point2(cc: Char, cp:Char = 0,ct:String = "") {
+class Point2(cc: Char, ct:Char = 0,cpos:String = "") {
   var c = cc
-  var p = cp
   var t = ct
-  override def toString(): String = "(%c,%c,%s)".format(c,p,t)
+  var pos = cpos
+  override def toString(): String = "(%c,%c,%s)".format(c,t,pos)
 }
 class Seq() {
   var list = Nil

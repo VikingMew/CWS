@@ -27,12 +27,12 @@ object main {
       val t = Feature.c(x,2,List(1,3,5,7))
       if(t != null) t(x,3) else null
     })
-    val templatelist = List(('c',0),('c',1),('c',-1))
+    val templatelist = List(('c',0),('u',0),('s',0))
     var t = new FeatureTemplate(templatelist)
-    //t.createFeature(h,2);
-    //t.createFeature(h,3);
-    //t.createFeature(h,2);
-    t.createFeature(l);
+    t.createFeature(h);
     println(t.list)
+    //t.createFeature(l);
+
+    //println(t.list)
   }
 }
