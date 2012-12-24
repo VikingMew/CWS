@@ -19,40 +19,40 @@ import collection.mutable.HashSet
 //p: pos tag
 //w: word
 //u: punc
-//s: single character word
-//l: length of word
-//r: repeat char
+//s: single character word (not implemented)
+//l: length of word        (not implemented)
+//r: repeat char           (not implemented)
 
-object Feature {
-  //val t = List[Array]();
-  def c(a:Array[Point2],index:Int,offset:Int) :(Array[Point2],Int)=>Int = {
-    if(index+offset>=0 && index+offset < a.length)
-      (b:Array[Point2],index2:Int) => {
-        if(index2+offset < b.length)
-          if(b(index2+offset).c ==  a(index+offset).c) 1 else 0
-        else
-          0
-      }
-    else
-      null
-  }
-  def c(a:Array[Point2],index:Int,offset:List[Int]) :(Array[Point2],Int)=>  Int = {
-    if(index+offset.min >=0 && index+offset.max < a.length)
-      (b:Array[Point2],index2:Int) => {
-        if(index2+offset.max < b.length){
-          offset.map(x => c(a,index,x)(b,index2)).reduceLeft(_&_)
-        }
-        else
-          0
-      }
-    else
-      null
-  }
-  //def createc
-}
+//object Feature {
+//  //val t = List[Array]();
+//  def c(a:Array[Point2],index:Int,offset:Int) :(Array[Point2],Int)=>Int = {
+//    if(index+offset>=0 && index+offset < a.length)
+//      (b:Array[Point2],index2:Int) => {
+//        if(index2+offset < b.length)
+//          if(b(index2+offset).c ==  a(index+offset).c) 1 else 0
+//        else
+//          0
+//      }
+//    else
+//      null
+//  }
+//  def c(a:Array[Point2],index:Int,offset:List[Int]) :(Array[Point2],Int)=>  Int = {
+//    if(index+offset.min >=0 && index+offset.max < a.length)
+//      (b:Array[Point2],index2:Int) => {
+//        if(index2+offset.max < b.length){
+//          offset.map(x => c(a,index,x)(b,index2)).reduceLeft(_&_)
+//        }
+//        else
+//          0
+//      }
+//    else
+//      null
+//  }
+//  //def createc
+//}
 
-class FeatureTemplate(ta:List[Tuple2[Char,Int]]) {
-  val template = ta
+class FeatureTemplate(featuretemplateset:List[Tuple2[Char,Int]]) {
+  val template = featuretemplateset
   val maxoffset = template.map(x => x._2).max
   val minoffset = template.map(x => x._2).min
 

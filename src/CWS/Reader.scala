@@ -1,6 +1,7 @@
 package CWS
 
 import collection.mutable.ArrayBuffer
+import collection.mutable
 
 /**
  * Created with IntelliJ IDEA.
@@ -44,5 +45,21 @@ object Reader {
     }
     source.close()
     a.toArray
+  }
+  def TagRead(f:String) = {
+    val source = scala.io.Source.fromFile(f)
+    val lines = source.getLines()
+    var pos = mutable.HashSet[String]()
+    var tag = mutable.HashSet[Char]()
+    for (x <- lines) {
+      if(!x.isEmpty) {
+        if(x.length>3) {
+          tag += x.charAt(0)
+          pos += x.substring(2)
+        }
+      }
+    }
+    source.close()
+    (tag,pos)
   }
 }
