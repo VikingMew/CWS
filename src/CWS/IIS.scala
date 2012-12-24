@@ -7,11 +7,8 @@ import scala.Math
 class IIS {
   def train_with_iis(ctokens:List[Tuple4[String,Char,Int,String]],cencoding:MaxEntEncoder=null, labels:List[String]
                       ){
-    var encoding = cencoding
-    if(encoding == null) {
-      encoding = MaxEntEncoder.train(ctokens, labels=labels)
-    }
-    var empirical_ffreg //=  (calculate_empirical_fcount(train_toks, encoding) / len(train_toks))
+    var encoding = MaxEntEncoder.train(ctokens,labels)
+    var empirical_ffreg =  (calculate_empirical_fcount(ctokens, encoding) / ctokens.length)
     var nfmap //= calculate_nfmap(train_toks, encoding)
     var nfarray //= numpy.array(sorted(nfmap, key=nfmap.__getitem__), 'd')
     var nftranspose //= numpy.reshape(nfarray, (len(nfarray), 1))
@@ -47,7 +44,7 @@ class IIS {
 }
 //train_toks:List[Tuple2[mutable.HashSet[Tuple3[String,Char,Int]],Int]]
 object MaxEntEncoder {
-  def train(train_toks:List[Tuple4[String,Char,Int,String]], labels:List[String]) {
+  def train(train_toks:List[Tuple4[String,Char,Int,String]], labels:List[String]):MaxEntEncoder= {
     var mapping = new mutable.HashMap[Tuple4[String,Char,Int,String],Int]// maps (fname, fval, label) -> fid
     //var seen_labels_pos = List[String]
     //var seen_labels_pos_tag = List[Tuple2[Char,String)]]
@@ -55,13 +52,13 @@ object MaxEntEncoder {
     var count = new mutable.HashMap[Tuple3[String,Char,Int],Int]   // maps (fname, fval) -> count
     for (x <- train_toks) {
       var tmp = count.get((x._1,x._2,x._3))
-      if(tmp != None) {
+      if(tmp != None)
         count.update((x._1,x._2,x._3),tmp.get + 1)
-      } else {
+       else
         count.put((x._1,x._2,x._3),1)
-      }
     }
-    new MaxEntEncoder(labels, mapping)
+    var t = new MaxEntEncoder(labels, mapping)
+    return t
   }
 }
 class MaxEntEncoder(clabels:List[String], cmapping:mutable.HashMap[Tuple4[String,Char,Int,String],Int]){
