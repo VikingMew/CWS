@@ -19,38 +19,26 @@ class IIS {
     //for fid in unattested: weights[fid] = numpy.NINF
     var classifier = new MaxEntClassifier(encoding, weights)
     var ll_old = null
-    var acc_old = null:
-    var i = 0;
+    var acc_old = null
+    var i = 0
     while(i < 100) {
-      i+=1;
-    }
-    //if trace > 2:
-    //  ll = cutoffchecker.ll or log_likelihood(classifier, train_toks)
-    //acc = cutoffchecker.acc or accuracy(classifier, train_toks)
-    //iternum = cutoffchecker.iter
-    //print '     %9d    %14.5f    %9.3f' % (iternum, ll, acc)
-    //
-    //# Calculate the deltas for this iteration, using Newton's method.
-    //deltas = calculate_deltas(
-    //  train_toks, classifier, unattested, empirical_ffreq,
-    //  nfmap, nfarray, nftranspose, encoding)
-    //
-    //# Use the deltas to update our weights.
-    //  weights = classifier.weights()
-    //weights += deltas
-    //classifier.set_weights(weights)
-    //
-    //# Check the log-likelihood & accuracy cutoffs.
-    //if cutoffchecker.check(classifier, train_toks):
-    //  break
-    //
+      ll = log_likelihood(classifier, train_toks)
+      acc = accuracy(classifier, train_toks)
+      print("     %9d    %14.5f    %9.3f".format(l, ll, acc))
+      deltas = calculate_deltas(
+        train_toks, classifier, unattested, empirical_ffreq,
+        nfmap, nfarray, nftranspose, encoding)
 
-    //
+      //# Use the deltas to update our weights.
+      weights = classifier.weights()
+      weights += deltas
+      classifier.weights = weights
+      i+=1
+    }
     //if trace > 2:
     //  ll = log_likelihood(classifier, train_toks)
     //acc = accuracy(classifier, train_toks)
     //print '         Final    %14.5f    %9.3f' % (ll, acc)
-    //
     //# Return the classifier.
     //return classifier
   }
@@ -81,41 +69,46 @@ class IIS {
 //    new MaxEntEncoder(labels, mapping)
 //  }
 //}
-//class MaxEntEncoder(clabels, cmapping){
-//
-//  var labels = clabels
-//
-//  ///var mapping = mapping
-//  """dict mapping from (fname,fval,label) -> fid"""
-//
-//  var length = len(mapping)
-//  def encode(featureset,label){
-//    encoding = []
-//
-//    for fname, fval in featureset.items():
-//    # Known feature name & value:
-//    if (fname, fval, label) in self._mapping:
-//      encoding.append((self._mapping[fname, fval, label], 1))
-//
-//    # Otherwise, we might want to fire an "unseen-value feature".
-//      elif self._unseen:
-//    # Have we seen this fname/fval combination with any label?
-//    for label2 in self._labels:
-//    if (fname, fval, label2) in self._mapping:
-//      break # we've seen this fname/fval combo
-//    # We haven't -- fire the unseen-value feature
-//    else:
-//    if fname in self._unseen:
-//      encoding.append((self._unseen[fname], 1))
-//
-//    # Add always-on features:
-//    if self._alwayson and label in self._alwayson:
-//      encoding.append((self._alwayson[label], 1))
-//
-//    return encoding
+class MaxEntEncoder(clabels, cmapping){
+
+  var labels = clabels
+
+  ///var mapping = mapping
+  """dict mapping from (fname,fval,label) -> fid"""
+
+  var length = len(mapping)
+  def encode(featureset:List[Tuple3[String,Char,Int]],label:String){
+    var encoding = List[Tuple2[Int,Int]]()
+    for(x <- featureset)
+    # Known feature name & value:
+    if (fname, fval, label) in self._mapping:
+      encoding.append((self._mapping[fname, fval, label], 1))
+
+    # Otherwise, we might want to fire an "unseen-value feature".
+      elif self._unseen:
+    # Have we seen this fname/fval combination with any label?
+    for label2 in self._labels:
+    if (fname, fval, label2) in self._mapping:
+      break # we've seen this fname/fval combo
+    # We haven't -- fire the unseen-value feature
+    else:
+    if fname in self._unseen:
+      encoding.append((self._unseen[fname], 1))
+
+    # Add always-on features:
+    if self._alwayson and label in self._alwayson:
+      encoding.append((self._alwayson[label], 1))
+
+    return encoding
   }
 
 }
 
-class MaxEntClassifier (){}
+class MaxEntClassifier(cencoding, cweights:Array[Double]){
+  var weights = cweights
+  var encoding = cencoding
+  def classify(featureset) {
+    self.prob_classify(featureset).max()
+  }
+}
 
