@@ -2,9 +2,10 @@ package CWS
 
 import collection.mutable
 import collection.mutable.ArrayBuffer
+import scala.Math
 
 class IIS {
-  def train_with_iis(ctokens:Array[Point2],cencoding:Any=null, labels:List[String]
+  def train_with_iis(ctokens:List[Tuple4[String,Char,Int,String]],cencoding:MaxEntEncoder=null, labels:List[String]
                       ){
     var encoding = cencoding
     if(encoding == null) {
@@ -46,28 +47,20 @@ class IIS {
 }
 //train_toks:List[Tuple2[mutable.HashSet[Tuple3[String,Char,Int]],Int]]
 object MaxEntEncoder {
-  def train(train_toks:Array[Point2], labels:List[String]) {
-    var mapping = new mutable.HashMap[Tuple4[String,Char,Int,Tuple2[Char,String]],Int]// maps (fname, fval, label) -> fid
+  def train(train_toks:List[Tuple4[String,Char,Int,String]], labels:List[String]) {
+    var mapping = new mutable.HashMap[Tuple4[String,Char,Int,String],Int]// maps (fname, fval, label) -> fid
     //var seen_labels_pos = List[String]
     //var seen_labels_pos_tag = List[Tuple2[Char,String)]]
-    var seen_labels_tag = List[Char]
+    var seen_labels_tag = List[String]
     var count = new mutable.HashMap[Tuple3[String,Char,Int],Int]   // maps (fname, fval) -> count
     for (x <- train_toks) {
-      if
+      var tmp = count.get((x._1,x._2,x._3))
+      if(tmp != None) {
+        count.update((x._1,x._2,x._3),tmp.get + 1)
+      } else {
+        count.put((x._1,x._2,x._3),1)
+      }
     }
-
-    // Record each of the features.
-    //for (fname, fval) in tok.items():
-
-//    # If a count cutoff is given, then only add a joint
-//    # feature once the corresponding (fname, fval, label)
-//    # tuple exceeds that cutoff.
-//    count[fname,fval] += 1
-//    if count[fname,fval] >= count_cutoff:
-//    if (fname, fval, label) not in mapping:
-//      mapping[fname, fval, label] = len(mapping)
-//
-//    if labels is None: labels = seen_labels
     new MaxEntEncoder(labels, mapping)
   }
 }
@@ -80,10 +73,8 @@ class MaxEntEncoder(clabels:List[String], cmapping:mutable.HashMap[Tuple4[String
   def encode(featureset:List[Tuple3[String,Char,Int]],label:String):List[Tuple2[Int,Int]] = {
     var encoding = List[Tuple2[Int,Int]]()
     for(x <- featureset) {
-      if(mapping.contains (x._1, x._2, x._3, label)) {
-        encoding += (1,1)
-         // (mapping(x._1, x._2, x._3, label), 1)
-      }
+      if(mapping.contains (x._1, x._2, x._3, label))
+       encoding= (mapping((x._1, x._2, x._3, label)), 1) :: encoding
     }
     encoding
   }
@@ -96,23 +87,16 @@ class MaxEntClassifier(cencoding:MaxEntEncoder, cweights:Array[Double]){
   def classify(featureset:List[Tuple3[String,Char,Int]]) {
     this.prob_classify(featureset).reduce((x,y)=>if(x._2 > y._2) x else y)
   }
-  def prob_classify(featureset:List[Tuple3[String,Char,Int]]):mutable.HashMap[Char,Double]= {
-    var prob_dict = new mutable.HashMap[Char,Double]()
+  def prob_classify(featureset:List[Tuple3[String,Char,Int]]):mutable.HashMap[String,Double]= {
+    var prob_dict = new mutable.HashMap[String,Double]()
     for(label <- encoding.labels) {
       var feature_vector = encoding.encode(featureset, label)
       var prod:Double = 1.0
-      for ((fid,y) <- feature_vector) {
-
+      for ((fid,fval) <- feature_vector) {
+        prod *= math.pow(weights(fid),fval)
       }
+      prob_dict(label)=prod
     }
-//    for label in self._encoding.labels():
-//      feature_vector = self._encoding.encode(featureset, label)
-//
-//    prod = 1.0
-//    for (f_id, f_val) in feature_vector:
-//      prod *= self._weights[f_id] ** f_val
-//    prob_dict[label] = prod
-
     prob_dict
   }
 }

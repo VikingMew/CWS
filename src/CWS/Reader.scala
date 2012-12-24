@@ -38,9 +38,9 @@ object Reader {
     for (x <- lines) {
       if(!x.isEmpty) {
         if(x.length>3)
-          a.append((new Point2(x.charAt(0),x.charAt(2),x.substring(4))))
+          a.append((new Point2(x.charAt(0),x.charAt(2).toString,x.substring(4))))
         else
-          a.append((new Point2(x.charAt(0),x.charAt(2),"")))
+          a.append((new Point2(x.charAt(0),x.charAt(2).toString,"")))
       }
     }
     source.close()
