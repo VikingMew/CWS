@@ -1,6 +1,7 @@
 package CWS
 
 import collection.mutable
+import collection.mutable.ArrayBuffer
 
 class IIS {
   def train_with_iis(ctokens:Array[Point2],cencoding:Any=null//, labels=None,
@@ -43,12 +44,13 @@ class IIS {
     //return classifier
   }
 }
+//train_toks:List[Tuple2[mutable.HashSet[Tuple3[String,Char,Int]],Int]]
 //object MaxEntEncoder {
-//  def train(train_toks:Array[Point2],  labels:Tuple2[List[Char],List[String]]) {
+//  def train(train_toks:Array[Point2], labels:List[Char]) {
 //    var mapping = new mutable.HashMap[Tuple4[String,Char,Int,Tuple2[Char,String]],Int]// maps (fname, fval, label) -> fid
 //    //var seen_labels_pos = List[String]
 //    //var seen_labels_pos_tag = List[Tuple2[Char,String)]]
-//    //var seen_labels_tag = List[Char]
+//    var seen_labels_tag = List[Char]
 //    var count = new mutable.HashMap[Tuple3[String,Char,Int],Int]   // maps (fname, fval) -> count
 //    for (x <- train_toks) {
 //      if
@@ -69,42 +71,25 @@ class IIS {
 //    new MaxEntEncoder(labels, mapping)
 //  }
 //}
-class MaxEntEncoder(clabels, cmapping){
+class MaxEntEncoder(clabels:List[Char], cmapping:mutable.HashMap[Tuple4[String,Char,Int,String],Int]){
 
   var labels = clabels
-
-  ///var mapping = mapping
-  """dict mapping from (fname,fval,label) -> fid"""
-
+  var mapping = cmappings
   var length = len(mapping)
+
   def encode(featureset:List[Tuple3[String,Char,Int]],label:String){
     var encoding = List[Tuple2[Int,Int]]()
-    for(x <- featureset)
-    # Known feature name & value:
-    if (fname, fval, label) in self._mapping:
-      encoding.append((self._mapping[fname, fval, label], 1))
-
-    # Otherwise, we might want to fire an "unseen-value feature".
-      elif self._unseen:
-    # Have we seen this fname/fval combination with any label?
-    for label2 in self._labels:
-    if (fname, fval, label2) in self._mapping:
-      break # we've seen this fname/fval combo
-    # We haven't -- fire the unseen-value feature
-    else:
-    if fname in self._unseen:
-      encoding.append((self._unseen[fname], 1))
-
-    # Add always-on features:
-    if self._alwayson and label in self._alwayson:
-      encoding.append((self._alwayson[label], 1))
-
+    for(x <- featureset) {
+      if(mapping contains (x._1, x._2, x._3, label)) {
+        encoding.append((mapping(x._1, x._2, x._3, label), 1))
+      }
+    }
     return encoding
   }
 
 }
 
-class MaxEntClassifier(cencoding, cweights:Array[Double]){
+class MaxEntClassifier(cencoding:List[Tuple2[Int,Int]], cweights:Array[Double]){
   var weights = cweights
   var encoding = cencoding
   def classify(featureset) {
