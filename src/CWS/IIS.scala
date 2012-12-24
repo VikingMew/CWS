@@ -1,4 +1,7 @@
 package CWS
+
+import collection.mutable
+
 class IIS {
   def train_with_iis(ctokens:Array[Point2],cencoding:Any=null//, labels=None,
                       ){
@@ -53,32 +56,62 @@ class IIS {
     //return classifier
   }
 }
+object MaxEntEncoder {
+  def train(train_toks:Point2,  labels=None) {
+    var mapping = new mutable.HashMap[Tuple4[String,Char,Int,Tuple2[Char,String]],Int]// maps (fname, fval, label) -> fid
+    var seen_labels = new Tuple2[mutable.HashSet[Char],mutable.HashSet[String]]       // The set of labels we've encountered
+    var count = new mutable.HashMap[Tuple3[String,Char,Int],Int]   // maps (fname, fval) -> count
+             count.
+    for (tok, label) in train_toks:
+      seen_labels.add(label)
 
-class MaxEntEncoder(labels, mapping){
+    # Record each of the features.
+    for (fname, fval) in tok.items():
 
-  var labels = labels)
-  """A list of attested labels."""
+    # If a count cutoff is given, then only add a joint
+    # feature once the corresponding (fname, fval, label)
+    # tuple exceeds that cutoff.
+    count[fname,fval] += 1
+    if count[fname,fval] >= count_cutoff:
+    if (fname, fval, label) not in mapping:
+      mapping[fname, fval, label] = len(mapping)
 
-  self._mapping = mapping
+    if labels is None: labels = seen_labels
+    new MaxEntEncoder(labels, mapping)
+  }
+}
+class MaxEntEncoder(clabels, cmapping){
+
+  var labels = clabels
+
+  ///var mapping = mapping
   """dict mapping from (fname,fval,label) -> fid"""
 
-  self._length = len(mapping)
-  """The length of generated joint feature vectors."""
+  var length = len(mapping)
+  def encode(featureset,label){
+    encoding = []
 
-  self._alwayson = None
-  """dict mapping from label -> fid"""
+    for fname, fval in featureset.items():
+    # Known feature name & value:
+    if (fname, fval, label) in self._mapping:
+      encoding.append((self._mapping[fname, fval, label], 1))
 
-  self._unseen = None
-  """dict mapping from fname -> fid"""
+    # Otherwise, we might want to fire an "unseen-value feature".
+      elif self._unseen:
+    # Have we seen this fname/fval combination with any label?
+    for label2 in self._labels:
+    if (fname, fval, label2) in self._mapping:
+      break # we've seen this fname/fval combo
+    # We haven't -- fire the unseen-value feature
+    else:
+    if fname in self._unseen:
+      encoding.append((self._unseen[fname], 1))
 
-  if alwayson_features:
-    self._alwayson = dict([(label,i+self._length)
-  for (i,label) in enumerate(labels)])
-  self._length += len(self._alwayson)
+    # Add always-on features:
+    if self._alwayson and label in self._alwayson:
+      encoding.append((self._alwayson[label], 1))
 
-  if unseen_features:
-    fnames = set(fname for (fname, fval, label) in mapping)
-  self._unseen = dict([(fname, i+self._length)
-  for (i, fname) in enumerate(fnames)])
-  self._length += len(fnames)
+    return encoding
+  }
+
 }
