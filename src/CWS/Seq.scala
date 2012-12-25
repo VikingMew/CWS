@@ -13,7 +13,7 @@ class Point(cc: Char, cp:Int = 0,ct:Int = 0) {
   var t = ct
   override def toString(): String = "(%c,%d,%d)".format(c,p,t)
 }
-class Point2(cc: Char, ct:String = 0,cpos:String = "") {
+class Point2(cc: Char, ct:String = "",cpos:String = "") {
   var c = cc
   var t = ct
   var pos = cpos

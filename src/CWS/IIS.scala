@@ -5,12 +5,12 @@ import collection.mutable.ArrayBuffer
 import scala.Math
 
 class IIS {
-  def calculate_empirical_fcount(train_toks:List[(List[(String,Char,Int)],String)], encoding:MaxEntEncoder) {
+  def calculate_empirical_fcount(train_toks:List[(List[(String,Char,Int)],String)], encoding:MaxEntEncoder):Array[Double]= {
     var fcount = Array.fill(encoding.length){0.0}
     for ((tok, label) <- train_toks)
       for((index,value) <-encoding.encode(tok, label))
         fcount(index) += 1
-    return fcount
+    fcount
   }
   def calculate_nfmap(train_toks:List[(List[(String,Char,Int)],String)], encoding:MaxEntEncoder):mutable.Map[Int,Int] = {
     var nfset = mutable.Map[Int,Int]()
@@ -20,16 +20,16 @@ class IIS {
     }
     nfset.map(x=>x.swap)
   }
-//  for tok, _ in train_toks:
-//  for label in encoding.labels():
-//    nfset.add(sum([val for (id,val) in encoding.encode(tok,label)]))
-//  return dict([(nf, i) for (i, nf) in enumerate(nfset)])
+  def log_likelihood(classifier, gold):
+  results = classifier.batch_prob_classify([fs for (fs,l) in gold])
+  ll = [pdist.prob(l) for ((fs,l), pdist) in zip(gold, results)]
+  return math.log(float(sum(ll))/len(ll))
   def train_with_iis(ctokens:List[(List[(String,Char,Int)],String)],
                      labels:List[String]){
     var encoding = MaxEntEncoder.train(ctokens,labels)
     var empirical_ffreq =  calculate_empirical_fcount(ctokens, encoding).map(x => x/ctokens.length)
-    var nfmap = calculate_nfmap(train_toks, encoding)
-    var nfarray = nfmap.toList.map(x => x._1.toFloat).sorted(x)
+    var nfmap = calculate_nfmap(ctokens,encoding)
+    var nfarray = (nfmap.toList.map(x => x._1.toDouble)).sortBy(_.toDouble)
     var nftranspose = nfarray.map(x=>List(x))
 //    var unattested = set(numpy.nonzero(empirical_ffreq==0)[0])
     var weights=Array.fill(empirical_ffreq.length){0.0}
@@ -39,6 +39,7 @@ class IIS {
     var ll_old = null
     var acc_old = null
     var i = 0
+    var ll, acc
     while(i < 100) {
       ll = log_likelihood(classifier, train_toks)
       acc = accuracy(classifier, train_toks)
