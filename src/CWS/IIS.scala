@@ -15,15 +15,78 @@ class IIS {
   def calculate_nfmap(train_toks:List[(List[(String,Char,Int)],String)], encoding:MaxEntEncoder):mutable.Map[Int,Int] = {
     var nfset = mutable.Map[Int,Int]()
     for ((tok,_) <- train_toks)
-    for (label <- encoding.labels) {
-      nfset ++= encoding.encode(tok,label).groupBy(_._2).map(x=>(x._1 ->x._2.length))
-    }
+      for (label <- encoding.labels) {
+        nfset ++= encoding.encode(tok,label).groupBy(_._2).map(x=>(x._1 ->x._2.length))
+      }
     nfset.map(x=>x.swap)
   }
-  def log_likelihood(classifier, gold):
-  results = classifier.batch_prob_classify([fs for (fs,l) in gold])
-  ll = [pdist.prob(l) for ((fs,l), pdist) in zip(gold, results)]
-  return math.log(float(sum(ll))/len(ll))
+  def log_likelihood(classifier:MaxEntClassifier, gold:List[(List[(String,Char,Int)],String)]) {
+    var results = classifier.batch_prob_classify(gold.map((x=>x._1)))
+    var ll =List[Double]()
+    for (((fs,l), pdist)  <- (gold zip results)) {
+      if (pdist.contains(l))
+        ll = math.pow(2,(pdist(l))) :: ll
+      else
+        ll = 0 :: ll
+    }
+    math.log(ll.reduce(_+_)/ll.length)
+  }
+//  def calculate_deltas(train_toks, classifier, unattested, ffreq_empirical,
+//                       nfmap, nfarray, nftranspose, encoding):
+//  # These parameters control when we decide that we've
+//  # converged.  It probably should be possible to set these
+//  # manually, via keyword arguments to train.
+//    NEWTON_CONVERGE = 1e-12
+//  MAX_NEWTON = 300
+//
+//  deltas = numpy.ones(encoding.length(), 'd')
+//
+//  # Precompute the A matrix:
+//  # A[nf][id] = sum ( p(fs) * p(label|fs) * f(fs,label) )
+//  # over all label,fs s.t. num_features[label,fs]=nf
+//  A = numpy.zeros((len(nfmap), encoding.length()), 'd')
+//
+//  for tok, label in train_toks:
+//    dist = classifier.prob_classify(tok)
+//
+//  for label in encoding.labels():
+//  # Generate the feature vector
+//    feature_vector = encoding.encode(tok,label)
+//  # Find the number of active features
+//    nf = sum([val for (id, val) in feature_vector])
+//  # Update the A matrix
+//  for (id, val) in feature_vector:
+//    A[nfmap[nf], id] += dist.prob(label) * val
+//  A /= len(train_toks)
+//
+//  # Iteratively solve for delta.  Use the following variables:
+//  #   - nf_delta[x][y] = nfarray[x] * delta[y]
+//  #   - exp_nf_delta[x][y] = exp(nf[x] * delta[y])
+//  #   - nf_exp_nf_delta[x][y] = nf[x] * exp(nf[x] * delta[y])
+//  #   - sum1[i][nf] = sum p(fs)p(label|fs)f[i](label,fs)
+//  #                       exp(delta[i]nf)
+//  #   - sum2[i][nf] = sum p(fs)p(label|fs)f[i](label,fs)
+//  #                       nf exp(delta[i]nf)
+//  for rangenum in range(MAX_NEWTON):
+//    nf_delta = numpy.outer(nfarray, deltas)
+//  exp_nf_delta = 2 ** nf_delta
+//  nf_exp_nf_delta = nftranspose * exp_nf_delta
+//  sum1 = numpy.sum(exp_nf_delta * A, axis=0)
+//  sum2 = numpy.sum(nf_exp_nf_delta * A, axis=0)
+//
+//  # Avoid division by zero.
+//  for fid in unattested: sum2[fid] += 1
+//
+//  # Update the deltas.
+//    deltas -= (ffreq_empirical - sum1) / -sum2
+//
+//  # We can stop once we converge.
+//  n_error = (numpy.sum(abs((ffreq_empirical-sum1)))/
+//    numpy.sum(abs(deltas)))
+//  if n_error < NEWTON_CONVERGE:
+//  return deltas
+//
+//  return deltas
   def train_with_iis(ctokens:List[(List[(String,Char,Int)],String)],
                      labels:List[String]){
     var encoding = MaxEntEncoder.train(ctokens,labels)
@@ -39,11 +102,11 @@ class IIS {
     var ll_old = null
     var acc_old = null
     var i = 0
-    var ll, acc
     while(i < 100) {
-      ll = log_likelihood(classifier, train_toks)
-      acc = accuracy(classifier, train_toks)
-      print("     %9d    %14.5f    %9.3f".format(l, ll, acc))
+      var ll = log_likelihood(classifier, train_toks)
+      //var acc = accuracy(classifier, train_toks)
+      //print("     %9d    %14.5f    %9.3f".format(l, ll, acc))
+      prinf("     %9d    %14.5f\n".format(l, ll))
       deltas = calculate_deltas(
         train_toks, classifier, unattested, empirical_ffreq,
         nfmap, nfarray, nftranspose, encoding)
@@ -117,6 +180,9 @@ class MaxEntClassifier(cencoding:MaxEntEncoder, cweights:Array[Double]){
       prob_dict(label)=prod
     }
     prob_dict
+  }
+  def batch_prob_classify( featuresets:List[List[(String,Char,Int)]]):List[mutable.HashMap[String,Double]] = {
+    featuresets.map(fs => this.classify(fs))
   }
 }
 
