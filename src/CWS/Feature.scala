@@ -57,7 +57,7 @@ class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
   val minoffset = template.map(x => x._2).min
 
   //var list = new HashMap[List[String],Feature]()
-  var list = new HashSet[List[(String,Char,Int)]]()
+  var list =  List[List[(String,Char,Int)]]()
   def createFeature(a:Array[Point2],offset:Int) = {
     var l = List[(String,Char,Int)]()
     if (offset + maxoffset < a.length && offset + minoffset >= 0) {
@@ -83,33 +83,33 @@ class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
       }
       l = l.reverse
       if (!list.contains(l))
-        list += l
+        list = l :: list
 
     }
-    list
+    l
   }
-  def createFeature(a:Array[Point2])= {
+  def createFeature(a:Array[Point2]):List[List[(String,Char,Int)]]= {
     val length = a.length
     var i = 0
-    var list = List[List[(String,Char,Int)]]()
+    var list2 = List[List[(String,Char,Int)]]()
     while(i < length) {
       var x = createFeature(a,i)
       if (!x.isEmpty && list.contains(x))
-        list = x :: list
+        list2 = x :: list2
       i += 1
     }
     list
   }
-  def createFeature(a:List[Array[Point2]]) = {
+  def createFeature(a:List[Array[Point2]]) :List[List[(String,Char,Int)]]= {
     a.map(x => createFeature(x)).flatten
   }
   def getFeatureFunc() = {
     Unit
   }
-  def createFeatureAndToken(a:List[Array[Point2]]) = {
+  def createFeatureAndToken(a:List[Array[Point2]]):List[(List[(String,Char,Int)],String)] = {
     a.map(x => createFeatureAndToken(x)).flatten
   }
-  def createFeatureAndToken(a:Array[Point2]) = {
+  def createFeatureAndToken(a:Array[Point2]): List[(List[(String,Char,Int)],String)]= {
     val length = a.length
     var i = 0
     var list = List[(List[(String,Char,Int)],String)]()
