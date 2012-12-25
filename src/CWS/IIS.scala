@@ -42,7 +42,7 @@ class IIS {
     val NEWTON_CONVERGE = 1e-12
     val MAX_NEWTON = 300
     var deltas = Array.fill(encoding.length){1.0}
-    var A = Array.fill(len(nfmap), encoding.length()){0.0}
+    var A = Array.fill(nfmap.length, encoding.length()){0.0}
     for ((tok,label) <- train_toks) {
       var dist = classifier.prob_classify(tok)
       for(label <- encoding.labels) {
@@ -53,15 +53,15 @@ class IIS {
         }
       }
     }
-    A = A.map(x=>x.map(y=>y/train_toks.length)
+    A = A.map(x=>x.map(y=>y/train_toks.length))
     val a_nftranspose = nftranspose.map(x=>x.toArray).toArray
     for (rangenum <- (0 until MAX_NEWTON)) {
       val nf_delta =nfarray.map(x=>deltas.map(y => y * x)).toArray
       val exp_nf_delta = nf_delta.map(x=>x.map(y=>math.pow(2,y)))
-      val nf_exp_nf_delta = a_nftranspose * exp_nf_delta
-      val sum1 = numpy.sum(exp_nf_delta * A, axis=0)
-      val sum2 = numpy.sum(nf_exp_nf_delta * A, axis=0)
-      deltas -= (ffreq_empirical - sum1) / -sum2
+      //val nf_exp_nf_delta = a_nftranspose * exp_nf_delta
+      //val sum1 = numpy.sum(exp_nf_delta * A, axis=0)
+      //val sum2 = numpy.sum(nf_exp_nf_delta * A, axis=0)
+      //deltas -= (ffreq_empirical - sum1) / -sum2
     }
     deltas
   }

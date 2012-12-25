@@ -6,6 +6,8 @@ package CWS
  * Date: 12/21/12
  * Time: 9:48 PM                                   r
  */
+
+
 object main {
   def main(args:Array[String])  {
     time(m)
@@ -17,6 +19,7 @@ object main {
     println("\n%f mseconds".format(micros))
     result
   }
+
   def m {
     Reader.segRead("dat/ctb7_mz_seg.utf8")
     val l = Reader.segRead("dat/ctb7_mz_pos.utf8")
