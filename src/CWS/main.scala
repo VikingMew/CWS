@@ -29,7 +29,7 @@ object main {
     val templatelist = List(('c',0),('u',0),('s',0))
     var template = new FeatureTemplate(templatelist)
     template.createFeature(h)
-    print(t);
+    print(template)
     //println(t.list)
     //t.createFeature(l);
 //    t.list.foreach(x =>{

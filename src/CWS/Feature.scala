@@ -51,32 +51,32 @@ import collection.mutable.HashSet
 //  //def createc
 //}
 
-class FeatureTemplate(featuretemplateset:List[Tuple2[Char,Int]]) {
+class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
   val template = featuretemplateset
   val maxoffset = template.map(x => x._2).max
   val minoffset = template.map(x => x._2).min
 
   //var list = new HashMap[List[String],Feature]()
-  var list = new HashSet[List[Tuple3[String,Char,Int]]]()
-  def createFeature(a:Array[Point2],offset:Int):Unit = {
+  var list = new HashSet[List[(String,Char,Int)]]()
+  def createFeature(a:Array[Point2],offset:Int) = {
+    var l = List[(String,Char,Int)]()
     if (offset + maxoffset < a.length && offset + minoffset >= 0) {
-      var l = List[Tuple3[String,Char,Int]]()
       for(x <- template) {
         val t = x._1 match{
-          case 'c' => Tuple3(a(offset + x._2).c.toString, x._1, x._2)
-          case 't' => Tuple3(a(offset + x._2).t.toString, x._1, x._2)
-          case 'p' => Tuple3(a(offset + x._2).pos.toString, x._1, x._2)
+          case 'c' => (a(offset + x._2).c.toString, x._1, x._2)
+          case 't' => (a(offset + x._2).t.toString, x._1, x._2)
+          case 'p' => (a(offset + x._2).pos.toString, x._1, x._2)
           case 'u' => {
             if(""" ?「」，。《》、：""" contains a(offset + x._2).c)
-              Tuple3("T" , x._1, x._2)
+              ("T" , x._1, x._2)
             else
-              Tuple3("F" , x._1, x._2)
+              ("F" , x._1, x._2)
           }
           case 's' => {
             if(a(offset + x._2).t == 'S')
-              Tuple3("T" , x._1, x._2)
+              ("T" , x._1, x._2)
             else
-              Tuple3("F" , x._1, x._2)
+              ("F" , x._1, x._2)
           }
         }
         l = t :: l
@@ -84,31 +84,49 @@ class FeatureTemplate(featuretemplateset:List[Tuple2[Char,Int]]) {
       l = l.reverse
       if (!list.contains(l))
         list += l
-     // println(list)
+
     }
+    list
   }
-  def createFeature(a:Array[Point2]):Unit = {
-    val length = a.length;
-    var i = 0;
+  def createFeature(a:Array[Point2])= {
+    val length = a.length
+    var i = 0
+    var list = List[List[(String,Char,Int)]]()
     while(i < length) {
-      createFeature(a,i)
+      var x = createFeature(a,i)
+      if (!x.isEmpty && list.contains(x))
+        list = x :: list
       i += 1
     }
+    list
   }
-  def createFeature(a:List[Array[Point2]]):Unit = {
-    a.map(x => createFeature(x))
-    Unit
+  def createFeature(a:List[Array[Point2]]) = {
+    a.map(x => createFeature(x)).flatten
   }
   def getFeatureFunc() = {
     Unit
   }
+  def createFeatureAndToken(a:List[Array[Point2]]) = {
+    a.map(x => createFeatureAndToken(x)).flatten
+  }
+  def createFeatureAndToken(a:Array[Point2]) = {
+    val length = a.length
+    var i = 0
+    var list = List[(List[(String,Char,Int)],String)]()
+    while(i < length) {
+      var x = createFeature(a,i)
+      list = (x,a(i).t) ::list
+      i += 1
+    }
+    list
+  }
 }
-class Feature(carg:List[Tuple3[String,Char,Int]]) {
+class Feature(carg:List[(String,Char,Int)]) {
   val arg = carg
   def run(b:Array[Point2],index2:Int) = {
     arg.map(x => cal(b,index2,x)).reduce(_&_)
   }
-  def cal(b:Array[Point2],index2:Int,t:Tuple3[String,Char,Int]):Int = {
+  def cal(b:Array[Point2],index2:Int,t:(String,Char,Int)):Int = {
     t._2 match {
       case 'c' => {
         if(t._1 contains b(index2+t._3).c) 1 else 0
