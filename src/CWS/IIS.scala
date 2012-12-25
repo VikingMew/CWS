@@ -31,51 +31,46 @@ class IIS {
     }
     math.log(ll.reduce(_+_)/ll.length)
   }
-//  def calculate_deltas(train_toks, classifier, unattested, ffreq_empirical,
-//                       nfmap, nfarray, nftranspose, encoding):
-//  # These parameters control when we decide that we've
-//  # converged.  It probably should be possible to set these
-//  # manually, via keyword arguments to train.
-//    NEWTON_CONVERGE = 1e-12
-//  MAX_NEWTON = 300
-//
-//  deltas = numpy.ones(encoding.length(), 'd')
-//
-//  # Precompute the A matrix:
-//  # A[nf][id] = sum ( p(fs) * p(label|fs) * f(fs,label) )
-//  # over all label,fs s.t. num_features[label,fs]=nf
-//  A = numpy.zeros((len(nfmap), encoding.length()), 'd')
-//
-//  for tok, label in train_toks:
-//    dist = classifier.prob_classify(tok)
-//
-//  for label in encoding.labels():
-//  # Generate the feature vector
-//    feature_vector = encoding.encode(tok,label)
-//  # Find the number of active features
-//    nf = sum([val for (id, val) in feature_vector])
-//  # Update the A matrix
-//  for (id, val) in feature_vector:
-//    A[nfmap[nf], id] += dist.prob(label) * val
-//  A /= len(train_toks)
-//
-//  # Iteratively solve for delta.  Use the following variables:
-//  #   - nf_delta[x][y] = nfarray[x] * delta[y]
-//  #   - exp_nf_delta[x][y] = exp(nf[x] * delta[y])
-//  #   - nf_exp_nf_delta[x][y] = nf[x] * exp(nf[x] * delta[y])
-//  #   - sum1[i][nf] = sum p(fs)p(label|fs)f[i](label,fs)
-//  #                       exp(delta[i]nf)
-//  #   - sum2[i][nf] = sum p(fs)p(label|fs)f[i](label,fs)
-//  #                       nf exp(delta[i]nf)
+  def calculate_deltas(train_toks:List[(List[(String,Char,Int)],String)],
+                       classifier:MaxEntClassifier,
+                       ffreq_empirical:Array[Double],
+                       nfmap:mutable.Map[Int,Int],
+                       nfarray:List[Double],
+                       nftranspose:List[List[Double]]
+                       , encoding:MaxEntEncoder) {
+    val NEWTON_CONVERGE = 1e-12
+    val MAX_NEWTON = 300
+    var deltas = Array.fill(encoding.length){1.0}
+    var A = Array.fill(len(nfmap), encoding.length()){0.0}
+    for ((tok,label) <- train_toks) {
+      var dist = classifier.prob_classify(tok)
+      for(label <- encoding.labels) {
+        var feature_vector = encoding.encode(tok,label)
+        nf = feature_vector.map(x=>x._2).reduce(_+_)
+        for ((id,value) <- feature_vector) {
+          A(nfmap(nf), id) += dist.prob(label) * value
+        }
+      }
+    }
+    A = A.map(x=>x.map(y=>y/train_toks.length))
+    var a_nftranspose = nftranspose.map(x=>x.toArray).toArray
+    for (rangenum <- (0 until MAX_NEWTON)) {
+      var nf_delta =nfarray.map(x=>deltas.map(y => y * x)).toArray
+      var exp_nf_delta = nf_delta.map(x=>x.map(y=>math.pow(2,y)))
+      var nf_exp_nf_delta = a_nftranspose * exp_nf_delta
+      var sum1 = numpy.sum(exp_nf_delta * A, axis=0)
+      var sum2 = numpy.sum(nf_exp_nf_delta * A, axis=0)
+      deltas -= (ffreq_empirical - sum1) / -sum2
+    }
+    deltas
+  }
+
 //  for rangenum in range(MAX_NEWTON):
 //    nf_delta = numpy.outer(nfarray, deltas)
 //  exp_nf_delta = 2 ** nf_delta
 //  nf_exp_nf_delta = nftranspose * exp_nf_delta
 //  sum1 = numpy.sum(exp_nf_delta * A, axis=0)
 //  sum2 = numpy.sum(nf_exp_nf_delta * A, axis=0)
-//
-//  # Avoid division by zero.
-//  for fid in unattested: sum2[fid] += 1
 //
 //  # Update the deltas.
 //    deltas -= (ffreq_empirical - sum1) / -sum2
@@ -108,7 +103,7 @@ class IIS {
       //print("     %9d    %14.5f    %9.3f".format(l, ll, acc))
       prinf("     %9d    %14.5f\n".format(l, ll))
       deltas = calculate_deltas(
-        train_toks, classifier, unattested, empirical_ffreq,
+        ctokens, classifier, unattested, empirical_ffreq,
         nfmap, nfarray, nftranspose, encoding)
 
       //# Use the deltas to update our weights.
