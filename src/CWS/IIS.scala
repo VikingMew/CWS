@@ -3,6 +3,7 @@ package CWS
 import collection.mutable
 import collection.mutable.ArrayBuffer
 import scala.Math
+import scalala.operators.Implicits._
 
 class IIS {
   def calculate_empirical_fcount(train_toks:List[(List[(String,Char,Int)],String)], encoding:MaxEntEncoder):Array[Double]= {
@@ -52,14 +53,14 @@ class IIS {
         }
       }
     }
-    A = A.map(x=>x.map(y=>y/train_toks.length))
-    var a_nftranspose = nftranspose.map(x=>x.toArray).toArray
+    A = A.map(x=>x.map(y=>y/train_toks.length)
+    val a_nftranspose = nftranspose.map(x=>x.toArray).toArray
     for (rangenum <- (0 until MAX_NEWTON)) {
-      var nf_delta =nfarray.map(x=>deltas.map(y => y * x)).toArray
-      var exp_nf_delta = nf_delta.map(x=>x.map(y=>math.pow(2,y)))
-      var nf_exp_nf_delta = a_nftranspose * exp_nf_delta
-      var sum1 = numpy.sum(exp_nf_delta * A, axis=0)
-      var sum2 = numpy.sum(nf_exp_nf_delta * A, axis=0)
+      val nf_delta =nfarray.map(x=>deltas.map(y => y * x)).toArray
+      val exp_nf_delta = nf_delta.map(x=>x.map(y=>math.pow(2,y)))
+      val nf_exp_nf_delta = a_nftranspose * exp_nf_delta
+      val sum1 = numpy.sum(exp_nf_delta * A, axis=0)
+      val sum2 = numpy.sum(nf_exp_nf_delta * A, axis=0)
       deltas -= (ffreq_empirical - sum1) / -sum2
     }
     deltas
