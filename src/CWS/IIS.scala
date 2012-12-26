@@ -47,7 +47,7 @@ object IIS {
                        ffreq_empirical:Array[Double],
                        nfmap:mutable.Map[Int,Int],
                        nfarray:DenseVector[Double],
-                       nftranspose:DenseMatrix[Double]
+                       nftranspose:DenseVector[Double]
                        , encoding:MaxEntEncoder):DenseVector[Double]= {
     val NEWTON_CONVERGE = 1e-12
     val MAX_NEWTON = 300
@@ -66,28 +66,19 @@ object IIS {
       }
     }
     A /= train_toks.length
-    val a_nftranspose = nftranspose.map(x=>x.toArray).toArray
-    val m_nftranspose = DenseMatrix.zeros[Double](a_nftranspose.length,a_nftranspose(0).length)
-    for (x <- 0 until a_nftranspose.length) {
-      for (y <- 0 until a_nftranspose(x).length)
-        m_nftranspose(x,y) = a_nftranspose(x).apply(y)
-    }
     val vnfarray = DenseVector.zeros[Double](nfarray.length)
     for (i <- 0 until nfarray.length)
       {vnfarray(i) = vnfarray(i)}
 
     for (rangenum <- (0 until MAX_NEWTON)) {
       var nf_delta =  vnfarray * deltas.t
-      //val nf_delta =nfarray.map(x=>deltas.map(y => y * x)).toArray
-      //val exp_nf_delta = nf_delta.map(x=>x.map(y=>math.pow(2,y)))
-      //val mar_en_delta = new DenseMatrix(exp_nf_delta)
       val exp_nf_delta = DenseMatrix.zeros[Double](nf_delta.numRows, nf_delta.numCols)
       for (x <- 0 until nf_delta.numRows) {
         for (y <-0 until nf_delta.numCols) {
           exp_nf_delta(x,y) += math.pow(2,nf_delta(x,y))
         }
       }
-      val nf_exp_nf_delta = m_nftranspose * exp_nf_delta
+      val nf_exp_nf_delta = nftranspose * exp_nf_delta
       var msum1 = exp_nf_delta * A
       var msum2 = nf_exp_nf_delta * A
       var sum1 = DenseVector.zeros[Double](msum1.numRows)
@@ -109,7 +100,12 @@ object IIS {
     var empirical_ffreq =  calculate_empirical_fcount(ctokens, encoding).map(x => x/ctokens.length)
     var nfmap = calculate_nfmap(ctokens,encoding)
     var nfarray = (nfmap.toList.map(x => x._1.toDouble)).sortBy(_.toDouble)
+    var v_nfarray = DenseVector.zeros[Double](nfarray.length)
+    for (x <- 0 until nfarray.length) {
+      v_nfarray(x) = nfarray(x)
+    }
     var nftranspose = nfarray.map(x=>List(x))
+    var v_nftranspose = v_nfarray.t
 //    var unattested = set(numpy.nonzero(empirical_ffreq==0)[0])
     var weights=Array.fill(empirical_ffreq.length){0.0}
 
@@ -125,7 +121,7 @@ object IIS {
       print("     %9d    %14.5f\n".format(i, ll))
       var deltas = calculate_deltas(
         ctokens, classifier, empirical_ffreq,
-        nfmap, nfarray, nftranspose, encoding)
+        nfmap, v_nfarray, v_nftranspose, encoding)
 
       //# Use the deltas to update our weights.
       weights = classifier.weights
