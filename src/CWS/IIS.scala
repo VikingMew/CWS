@@ -200,7 +200,7 @@ class MaxEntEncoder(clabels:List[String], cmapping:mutable.HashMap[(String,Char,
 class MaxEntClassifier(cencoding:MaxEntEncoder, cweights:Array[Double]){
   var weights = cweights
   var encoding = cencoding
-  def classify(featureset:List[Tuple3[String,Char,Int]]):mutable.HashMap[String,Double]= {
+  def classify(featureset:List[Tuple3[String,Char,Int]]):(String,Double)= {
     this.prob_classify(featureset).reduce((x,y)=>if(x._2 > y._2) x else y)
   }
   def prob_classify(featureset:List[(String,Char,Int)]):mutable.HashMap[String,Double]= {
@@ -215,7 +215,7 @@ class MaxEntClassifier(cencoding:MaxEntEncoder, cweights:Array[Double]){
     }
     prob_dict
   }
-  def batch_prob_classify( featuresets:List[List[(String,Char,Int)]]):List[mutable.HashMap[String,Double]] = {
+  def batch_prob_classify( featuresets:List[List[(String,Char,Int)]]):List[(String,Double)] = {
     featuresets.map(fs => this.classify(fs))
   }
 }
