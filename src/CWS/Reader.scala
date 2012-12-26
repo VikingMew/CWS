@@ -50,11 +50,11 @@ object Reader {
     val source = scala.io.Source.fromFile(f)
     val lines = source.getLines()
     var pos = mutable.HashSet[String]()
-    var tag = mutable.HashSet[Char]()
+    var tag = mutable.HashSet[String]()
     for (x <- lines) {
       if(!x.isEmpty) {
         if(x.length>3) {
-          tag += x.charAt(0)
+          tag += x.charAt(0).toString()
           pos += x.substring(2)
         }
       }

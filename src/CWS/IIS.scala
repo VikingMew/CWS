@@ -8,7 +8,7 @@ import scalala.scalar._
 import scalala.tensor.::;
 import scalala.tensor.dense._
 
-class IIS {
+object IIS {
   def calculate_empirical_fcount(train_toks:List[(List[(String,Char,Int)],String)], encoding:MaxEntEncoder):Array[Double]= {
     var fcount = Array.fill(encoding.length){0.0}
     for ((tok, label) <- train_toks)
@@ -24,13 +24,13 @@ class IIS {
       }
     nfset.map(x=>x.swap)
   }
-  def log_likelihood(classifier:MaxEntClassifier, gold:List[(List[(String,Char,Int)],String)]) {
+  def log_likelihood(classifier:MaxEntClassifier, gold:List[(List[(String,Char,Int)],String)]):Double ={
     var results = classifier.batch_prob_classify(gold.map((x=>x._1)))
 
     var ll =List[Double]()
     for (((fs,l), pdist)  <- (gold zip results)) {
-      if (pdist.contains(l))
-        ll = math.pow(2,(pdist(l))) :: ll
+      if (pdist._1 equals ll)
+        ll = math.pow(2,pdist._2) :: ll
       else
         ll = 0 :: ll
     }
@@ -46,8 +46,8 @@ class IIS {
                        classifier:MaxEntClassifier,
                        ffreq_empirical:Array[Double],
                        nfmap:mutable.Map[Int,Int],
-                       nfarray:List[Double],
-                       nftranspose:List[List[Double]]
+                       nfarray:DenseVector[Double],
+                       nftranspose:DenseMatrix[Double]
                        , encoding:MaxEntEncoder):DenseVector[Double]= {
     val NEWTON_CONVERGE = 1e-12
     val MAX_NEWTON = 300
@@ -57,7 +57,9 @@ class IIS {
       var dist = classifier.prob_classify(tok)
       for(label <- encoding.labels) {
         var feature_vector = encoding.encode(tok,label)
-        var nf = feature_vector.map(x=>x._2).reduce(_+_)
+        var nf = 0
+        if(!feature_vector.isEmpty)
+          nf = feature_vector.map(x=>x._2).reduce(_+_)
         for ((id,value) <- feature_vector) {
           A(nfmap(nf), id) += distProb(dist,label) * value
         }
@@ -101,23 +103,6 @@ class IIS {
     deltas
   }
 
-//  for rangenum in range(MAX_NEWTON):
-//    nf_delta = numpy.outer(nfarray, deltas)
-//  exp_nf_delta = 2 ** nf_delta
-//  nf_exp_nf_delta = nftranspose * exp_nf_delta
-//  sum1 = numpy.sum(exp_nf_delta * A, axis=0)
-//  sum2 = numpy.sum(nf_exp_nf_delta * A, axis=0)
-//
-//  # Update the deltas.
-//    deltas -= (ffreq_empirical - sum1) / -sum2
-//
-//  # We can stop once we converge.
-//  n_error = (numpy.sum(abs((ffreq_empirical-sum1)))/
-//    numpy.sum(abs(deltas)))
-//  if n_error < NEWTON_CONVERGE:
-//  return deltas
-//
-//  return deltas
   def train_with_iis(ctokens:List[(List[(String,Char,Int)],String)],
                      labels:List[String]){
     var encoding = MaxEntEncoder.train(ctokens,labels)
@@ -207,9 +192,10 @@ class MaxEntClassifier(cencoding:MaxEntEncoder, cweights:Array[Double]){
     var prob_dict = new mutable.HashMap[String,Double]()
     for(label <- encoding.labels) {
       var feature_vector = encoding.encode(featureset, label)
-      var prod:Double = 1.0
+
+      var prod:Double = 0.0
       for ((fid,fval) <- feature_vector) {
-        prod *= math.pow(weights(fid),fval)
+        prod += weights(fid)*fval
       }
       prob_dict(label)=prod
     }

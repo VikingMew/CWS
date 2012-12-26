@@ -31,8 +31,9 @@ object main {
 //    })
     val templatelist = List(('c',0),('u',0),('s',0))
     var template = new FeatureTemplate(templatelist)
-    template.createFeature(h)
-    print(template)
+    var tok = template.createFeatureAndToken(l)
+    print(template.list)
+    CWS.IIS.train_with_iis(tok,t._1.toList)
     //println(t.list)
     //t.createFeature(l);
 //    t.list.foreach(x =>{
