@@ -2,11 +2,12 @@ package CWS
 
 import collection.mutable
 import collection.mutable.ArrayBuffer
-import scala.Math
 import scalala.operators.Implicits._
 import scalala.scalar._
-import scalala.tensor.::;
+import scalala.tensor.::
 import scalala.tensor.dense._
+import org.netlib.blas.BLAS
+import org.netlib.blas
 
 object IIS {
   def calculate_empirical_fcount(train_toks:List[(List[(String,Char,Int)],String)], encoding:MaxEntEncoder):Array[Double]= {
@@ -46,12 +47,11 @@ object IIS {
                        classifier:MaxEntClassifier,
                        ffreq_empirical:Array[Double],
                        nfmap:mutable.Map[Int,Int],
-                       nfarray:DenseVector[Double],
-                       nftranspose:DenseVector[Double]
-                       , encoding:MaxEntEncoder):DenseVector[Double]= {
+                       nfarray:DenseMatrix[Double],
+                       encoding:MaxEntEncoder):DenseMatrix[Double]= {
     val NEWTON_CONVERGE = 1e-12
     val MAX_NEWTON = 300
-    var deltas = DenseVector.ones[Double](encoding.length)//Array.fill(encoding.length){1.0}
+    var deltas = DenseMatrix.ones[Double](encoding.length,1)//Array.fill(encoding.length){1.0}
     var A = DenseMatrix.zeros[Double](nfmap.size, encoding.length)//Array.fill(nfmap.size, encoding.length){0.0}
     for ((tok,label) <- train_toks) {
       var dist = classifier.prob_classify(tok)
@@ -66,19 +66,16 @@ object IIS {
       }
     }
     A /= train_toks.length
-    val vnfarray = DenseVector.zeros[Double](nfarray.length)
-    for (i <- 0 until nfarray.length)
-      {vnfarray(i) = vnfarray(i)}
 
     for (rangenum <- (0 until MAX_NEWTON)) {
-      var nf_delta =  vnfarray * deltas.t
+      var nf_delta =  nfarray * deltas.t
       val exp_nf_delta = DenseMatrix.zeros[Double](nf_delta.numRows, nf_delta.numCols)
       for (x <- 0 until nf_delta.numRows) {
         for (y <-0 until nf_delta.numCols) {
           exp_nf_delta(x,y) += math.pow(2,nf_delta(x,y))
         }
       }
-      val nf_exp_nf_delta = nftranspose * exp_nf_delta
+      val nf_exp_nf_delta = nfarray.t * exp_nf_delta
       var msum1 = exp_nf_delta * A
       var msum2 = nf_exp_nf_delta * A
       var sum1 = DenseVector.zeros[Double](msum1.numRows)
@@ -100,15 +97,12 @@ object IIS {
     var empirical_ffreq =  calculate_empirical_fcount(ctokens, encoding).map(x => x/ctokens.length)
     var nfmap = calculate_nfmap(ctokens,encoding)
     var nfarray = (nfmap.toList.map(x => x._1.toDouble)).sortBy(_.toDouble)
-    var v_nfarray = DenseVector.zeros[Double](nfarray.length)
+    var v_nfarray = DenseMatrix.zeros[Double](nfarray.length,1)
     for (x <- 0 until nfarray.length) {
-      v_nfarray(x) = nfarray(x)
+      v_nfarray(x,0) = nfarray(x)
     }
-    var nftranspose = nfarray.map(x=>List(x))
-    var v_nftranspose = v_nfarray.t
 //    var unattested = set(numpy.nonzero(empirical_ffreq==0)[0])
     var weights=Array.fill(empirical_ffreq.length){0.0}
-
     //for fid in unattested: weights[fid] = numpy.NINF
     var classifier = new MaxEntClassifier(encoding, weights)
     var ll_old = null
@@ -121,12 +115,12 @@ object IIS {
       print("     %9d    %14.5f\n".format(i, ll))
       var deltas = calculate_deltas(
         ctokens, classifier, empirical_ffreq,
-        nfmap, v_nfarray, v_nftranspose, encoding)
+        nfmap, v_nfarray, encoding)
 
       //# Use the deltas to update our weights.
       weights = classifier.weights
       for (x <- 0 until weights.length) {
-        weights(x) += deltas(x)
+        weights(x) += deltas(x,0)
       }
 
       classifier.weights = weights
