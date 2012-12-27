@@ -10,6 +10,11 @@ import collection.mutable
  */
 class AnotherIIS (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:Array[Point],clabels:List[String]) {
   var text = ctext
+<<<<<<< HEAD
+=======
+  var allword = new mutable.HashMap[Char,Int]()
+  var count:Int = text.length;
+>>>>>>> master
   val featureset = cfeatureset
   var feature = new Array[Feature](featureset.length)
   val length = featureset.length
@@ -24,11 +29,25 @@ class AnotherIIS (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:Array
 
   trainiis()
 
+<<<<<<< HEAD
+=======
+  def getword() {
+    var i = 0
+    while(i < text.length) {
+      if(allword contains text(i).c) {
+        allword.add(text(i).c)
+      }
+    }
+  }
+>>>>>>> master
   def calempp() {
     var i = 0
     while(i < featureset.length) {
       empp(i) = empirical_p(i)
+<<<<<<< HEAD
       print(empp(i))
+=======
+>>>>>>> master
       i += 1
     }
   }
@@ -61,12 +80,23 @@ class AnotherIIS (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:Array
     var i = 0
     var sum = 0.0
 
+<<<<<<< HEAD
     while(i < text.length) {
       //x = a[i]
       if (feature(fsindex).run(text,i) == 1) {
         sum += plambda(i,feature(fsindex).y)
       }
       i += 1
+=======
+    for((word,freq) <- allword){
+      //x = a[i]
+      var sum2:Double = freq.toDouble / count
+      for(label <- labels)
+      if (feature(fsindex).run(word,i) == 1) {
+        sum += plambda(word,feature(fsindex).y)
+      }
+      sum += sum2
+>>>>>>> master
     }
 
     println(sum)
