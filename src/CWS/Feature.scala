@@ -25,9 +25,9 @@ import collection.mutable.HashSet
 
 //object Feature {
 //  //val t = List[Array]();
-//  def c(a:Array[Point2],index:Int,offset:Int) :(Array[Point2],Int)=>Int = {
+//  def c(a:Array[Point],index:Int,offset:Int) :(Array[Point],Int)=>Int = {
 //    if(index+offset>=0 && index+offset < a.length)
-//      (b:Array[Point2],index2:Int) => {
+//      (b:Array[Point],index2:Int) => {
 //        if(index2+offset < b.length)
 //          if(b(index2+offset).c ==  a(index+offset).c) 1 else 0
 //        else
@@ -36,9 +36,9 @@ import collection.mutable.HashSet
 //    else
 //      null
 //  }
-//  def c(a:Array[Point2],index:Int,offset:List[Int]) :(Array[Point2],Int)=>  Int = {
+//  def c(a:Array[Point],index:Int,offset:List[Int]) :(Array[Point],Int)=>  Int = {
 //    if(index+offset.min >=0 && index+offset.max < a.length)
-//      (b:Array[Point2],index2:Int) => {
+//      (b:Array[Point],index2:Int) => {
 //        if(index2+offset.max < b.length){
 //          offset.map(x => c(a,index,x)(b,index2)).reduceLeft(_&_)
 //        }
@@ -58,7 +58,7 @@ class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
 
   //var list = new HashMap[List[String],Feature]()
   var list =  List[List[(String,Char,Int)]]()
-  def createFeature(a:Array[Point2],offset:Int) = {
+  def createFeature(a:Array[Point],offset:Int) = {
     var l = List[(String,Char,Int)]()
     if (offset + maxoffset < a.length && offset + minoffset >= 0) {
       for(x <- template) {
@@ -88,7 +88,7 @@ class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
     }
     l
   }
-  def createFeature(a:Array[Point2]):List[List[(String,Char,Int)]]= {
+  def createFeature(a:Array[Point]):List[List[(String,Char,Int)]]= {
     val length = a.length
     var i = 0
     var list2 = List[List[(String,Char,Int)]]()
@@ -100,16 +100,16 @@ class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
     }
     list
   }
-  def createFeature(a:List[Array[Point2]]) :List[List[(String,Char,Int)]]= {
+  def createFeature(a:List[Array[Point]]) :List[List[(String,Char,Int)]]= {
     a.map(x => createFeature(x)).flatten
   }
   def getFeatureFunc() = {
     Unit
   }
-  def createFeatureAndToken(a:List[Array[Point2]]):List[(List[(String,Char,Int)],String)] = {
+  def createFeatureAndToken(a:List[Array[Point]]):List[(List[(String,Char,Int)],String)] = {
     a.map(x => createFeatureAndToken(x)).flatten
   }
-  def createFeatureAndToken(a:Array[Point2]): List[(List[(String,Char,Int)],String)]= {
+  def createFeatureAndToken(a:Array[Point]): List[(List[(String,Char,Int)],String)]= {
     val length = a.length
     var i = 0
     var list = List[(List[(String,Char,Int)],String)]()
@@ -121,12 +121,16 @@ class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
     list
   }
 }
-class Feature(carg:List[(String,Char,Int)]) {
-  val arg = carg
-  def run(b:Array[Point2],index2:Int) = {
-    arg.map(x => cal(b,index2,x)).reduce(_&_)
+class Feature(carg:(List[(String,Char,Int)],String)) {
+  val arg = carg._1
+  val y = carg._2
+  def run(b:Array[Point],index2:Int) = {
+    if(b(index2).t.equals(y))
+      arg.map(x => cal(b,index2,x)).reduce(_&_)
+    else
+      0
   }
-  def cal(b:Array[Point2],index2:Int,t:(String,Char,Int)):Int = {
+  def cal(b:Array[Point],index2:Int,t:(String,Char,Int)):Int = {
     t._2 match {
       case 'c' => {
         if(t._1 contains b(index2+t._3).c) 1 else 0

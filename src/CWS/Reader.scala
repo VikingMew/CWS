@@ -14,17 +14,17 @@ object Reader {
   def segRead(f:String) = {
     val source = scala.io.Source.fromFile(f)
     val lines = source.getLines()
-    var l = List[Array[Point2]]()
-    var a = ArrayBuffer[Point2]()
+    var l = List[Array[Point]]()
+    var a = ArrayBuffer[Point]()
     for (x <- lines) {
       if(x.isEmpty) {
         l = a.toArray :: l
-        a =  new ArrayBuffer[Point2]()
+        a =  new ArrayBuffer[Point]()
       } else {
         if(x.length>3)
-          a.append((new Point2(x.charAt(0),x.charAt(2).toString,x.substring(4))))
+          a.append((new Point(x.charAt(0),x.charAt(2).toString,x.substring(4))))
         else
-          a.append((new Point2(x.charAt(0),x.charAt(2).toString,"")))
+          a.append((new Point(x.charAt(0),x.charAt(2).toString,"")))
       }
     }
     source.close ()
@@ -33,14 +33,14 @@ object Reader {
   def seg2Read(f:String) = {
     val source = scala.io.Source.fromFile(f)
     val lines = source.getLines()
-    //var l = List[Array[Point2]]()
-    var a = ArrayBuffer[Point2]()
+    //var l = List[Array[Point]]()
+    var a = ArrayBuffer[Point]()
     for (x <- lines) {
       if(!x.isEmpty) {
         if(x.length>3)
-          a.append((new Point2(x.charAt(0),x.charAt(2).toString,x.substring(4))))
+          a.append((new Point(x.charAt(0),x.charAt(2).toString,x.substring(4))))
         else
-          a.append((new Point2(x.charAt(0),x.charAt(2).toString,"")))
+          a.append((new Point(x.charAt(0),x.charAt(2).toString,"")))
       }
     }
     source.close()

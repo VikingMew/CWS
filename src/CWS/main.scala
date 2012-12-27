@@ -22,25 +22,39 @@ object main {
 
   def m {
     Reader.segRead("dat/ctb7_mz_seg.utf8")
-    val l = Reader.segRead("dat/ctb7_mz_pos.utf8")
-    var t = Reader.TagRead("dat/ctb7_mz_pos_tags.utf8")
-    val h = l.head
-//    l.map(x =>{
-//      val t = Feature.c(x,2,List(1,3,5,7))
-//      if(t != null) t(x,3) else null
-//    })
-    val templatelist = List(('c',0),('u',0),('s',0))
-    var template = new FeatureTemplate(templatelist)
-    var tok = template.createFeatureAndToken(l)
-    print(template.list)
-    CWS.IIS.train_with_iis(tok,t._1.toList)
-    //println(t.list)
-    //t.createFeature(l);
-//    t.list.foreach(x =>{
-//      val a = new Feature(x)
-//
-//      print(a.run(h,0))
-//    })
-    //println(t.list)
+    val text = Reader.segRead("dat/ctb7_mz_pos.utf8")
+    val text2 = Reader.seg2Read("dat/ctb7_mz_pos.utf8")
+    var tag = Reader.TagRead("dat/ctb7_mz_pos_tags.utf8")
+    val head = text.head
+    val template= List(('c',0))
+    var unselected = List[List[(Char,Int)]]()
+    var selected = List[List[(Char,Int)]]()
+    var ftemplate = new FeatureTemplate(template)
+    var featuresets = ftemplate.createFeatureAndToken(text)
+    println("created,length=%s".format(featuresets.length))
+    var iis = new AnotherIIS(featuresets,text2,tag._1.toList)
+    iis.alambda.map(x=>print(x))
+//    while(!unselected.isEmpty) {
+//      //2
+//      for (ts <- unselected) {
+//        var template = new FeatureTemplate(ts)
+//        var featuresets = template.createFeatureAndToken(text)
+//        var template2 = new FeatureTemplate(ts)
+//        var activefeature = List[Array[List[(List[(String,Char,Int)],String)]]]()
+//        for(sentence <- text) {
+//          var i = 0
+//          while(i < sentence.length) {
+//            for(featureset <- featuresets) {
+//              var active2 = List[(List[(String,Char,Int)],String)]()
+//              var f = new Feature(featureset)
+//              if (f.run(sentence,i)==1) {
+//                active2 = featureset :: active2
+//              }
+//            }
+//            i += 1
+//          }
+//        }
+//      }
+//    }
   }
 }
