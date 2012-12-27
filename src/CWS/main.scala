@@ -26,13 +26,16 @@ object main {
     val text2 = Reader.seg2Read("dat/ctb7_mz_pos.utf8")
     var tag = Reader.TagRead("dat/ctb7_mz_pos_tags.utf8")
     val head = text.head
-    val template= List(('c',0))
+    head.map(x=>print(x))
+    val template= List(('s',0))
     var unselected = List[List[(Char,Int)]]()
     var selected = List[List[(Char,Int)]]()
     var ftemplate = new FeatureTemplate(template)
-    var featuresets = ftemplate.createFeatureAndToken(text)
-    println("created,length=%s".format(featuresets.length))
-    var iis = new AnotherIIS(featuresets,text2,tag._1.toList)
+    ftemplate.createFeature(text.head)
+    var featuresets = ftemplate.list.toList
+    println(featuresets)
+    println("created,length=%s".format(featuresets.size))
+    var iis = new AnotherIIS(featuresets,text.head,tag._1.toList)
     iis.alambda.map(x=>print(x))
 //    while(!unselected.isEmpty) {
 //      //2

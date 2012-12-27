@@ -2,6 +2,8 @@ package CWS
 
 import collection.mutable.ArrayBuffer
 import scala.collection.mutable.HashMap
+import collection.mutable
+
 //import collection.immutable.HashSet
 import collection.mutable.HashSet
 
@@ -57,7 +59,7 @@ class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
   val minoffset = template.map(x => x._2).min
 
   //var list = new HashMap[List[String],Feature]()
-  var list =  List[List[(String,Char,Int)]]()
+  var list =  new mutable.HashSet[(List[(String,Char,Int)],String)]()
   def createFeature(a:Array[Point],offset:Int) = {
     var l = List[(String,Char,Int)]()
     if (offset + maxoffset < a.length && offset + minoffset >= 0) {
@@ -73,7 +75,7 @@ class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
               ("F" , x._1, x._2)
           }
           case 's' => {
-            if(a(offset + x._2).t == 'S')
+            if(a(offset + x._2).t == "S")
               ("T" , x._1, x._2)
             else
               ("F" , x._1, x._2)
@@ -82,44 +84,44 @@ class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
         l = t :: l
       }
       l = l.reverse
-      if (!list.contains(l))
-        list = l :: list
-
+      val l1 = (l,a(offset).t)
+      if (!list.contains(l1)) {
+        list.add(l1)
+      }
     }
     l
   }
-  def createFeature(a:Array[Point]):List[List[(String,Char,Int)]]= {
+  def createFeature(a:Array[Point]):List[(List[(String,Char,Int)],String)]= {
     val length = a.length
     var i = 0
     var list2 = List[List[(String,Char,Int)]]()
     while(i < length) {
-      var x = createFeature(a,i)
-      if (!x.isEmpty && list.contains(x))
-        list2 = x :: list2
+      createFeature(a,i)
       i += 1
     }
-    list
+    list.toList
   }
-  def createFeature(a:List[Array[Point]]) :List[List[(String,Char,Int)]]= {
+  def createFeature(a:List[Array[Point]]) :List[(List[(String,Char,Int)],String)]= {
     a.map(x => createFeature(x)).flatten
+    list.toList
   }
   def getFeatureFunc() = {
     Unit
   }
-  def createFeatureAndToken(a:List[Array[Point]]):List[(List[(String,Char,Int)],String)] = {
-    a.map(x => createFeatureAndToken(x)).flatten
-  }
-  def createFeatureAndToken(a:Array[Point]): List[(List[(String,Char,Int)],String)]= {
-    val length = a.length
-    var i = 0
-    var list = List[(List[(String,Char,Int)],String)]()
-    while(i < length) {
-      var x = createFeature(a,i)
-      list = (x,a(i).t) ::list
-      i += 1
-    }
-    list
-  }
+//  def createFeatureAndToken(a:List[Array[Point]]):List[(List[(String,Char,Int)],String)] = {
+//    a.map(x => createFeatureAndToken(x)).flatten
+//  }
+//  def createFeatureAndToken(a:Array[Point]): List[(List[(String,Char,Int)],String)]= {
+//    val length = a.length
+//    var i = 0
+//    var list = List[(List[(String,Char,Int)],String)]()
+//    while(i < length) {
+//      var x = createFeature(a,i)
+//      list = (x,a(i).t) ::list
+//      i += 1
+//    }
+//    list
+//  }
 }
 class Feature(carg:(List[(String,Char,Int)],String)) {
   val arg = carg._1
@@ -146,7 +148,7 @@ class Feature(carg:(List[(String,Char,Int)],String)) {
         if ("T" contains t._1) v else 1 - v
       }
       case 's' => {
-        val v = if(b(index2 + t._3).t == 'S') 1 else 0
+        val v = if(b(index2 + t._3).t == "S") 1 else 0
         if ("T" contains t._1) v else 1 - v
       }
     }

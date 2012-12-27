@@ -15,12 +15,23 @@ class AnotherIIS (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:Array
   val length = featureset.length
   var emp_dist = mutable.HashMap[(Char,String),Int]()
   var f_total = mutable.HashMap[(Char,String),Int]()
-  var alambda = Array.fill[Double](length){0.0}
+  var alambda = Array.fill[Double](length){1.0}
   var labels = clabels
   calfeature()
   var m = calM()
+  var empp = new Array[Int](featureset.length)
+  calempp()
+
   trainiis()
 
+  def calempp() {
+    var i = 0
+    while(i < featureset.length) {
+      empp(i) = empirical_p(i)
+      print(empp(i))
+      i += 1
+    }
+  }
   def calfeature() {
     var i = 0
     while(i < featureset.length) {
@@ -40,6 +51,7 @@ class AnotherIIS (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:Array
         }
         i += 1
       }
+      println("Z:%d,label:%s lf:%f".format(index,label,sum2))
       sum += math.exp(sum2)
     }
     sum
@@ -48,7 +60,6 @@ class AnotherIIS (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:Array
     //plamdba(f) = emp(x)*plambda(x,y)fi(x,y)
     var i = 0
     var sum = 0.0
-    println("calulating pl")
 
     while(i < text.length) {
       //x = a[i]
@@ -57,30 +68,37 @@ class AnotherIIS (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:Array
       }
       i += 1
     }
-    println("calulated pl")
 
+    println(sum)
     sum
   }
 
   def plambda(index:Int,token:String) :Double = {
     //plamdba(y|x)=(1/Z(lambda,x)) * e(sigma(lambdai*fi))
     var z = zlamdba(index)
-    var result = 1/z
+    var result:Double = 0.0
     var sum = 0.0
-    for (i <- 0 until featureset.length) {
+    var i = 0
+    var occurs  = 0
+    while(i < featureset.length) {
+
       if(featureset(i)._2 == token){
         if (feature(i).run(text,index) == 1) {
+          occurs += 1
           sum += alambda(i)
         }
       }
+      i += 1
     }
-    result *= math.exp(sum)
+    result = math.exp(sum) / z
+    print("PLSUM(x:%d,y:%s):%f,Z:%f,occurs:%dResult:".format(index,token,sum,z,occurs))
+    println(result)
     result
   }
-  def empirical_p(fsindex:Int):Double = {
+  def empirical_p(fsindex:Int):Int = {
+    //=p(fi)=pxpxyfxy
     var i = 0
     var sum = 0
-    println("calulating emp")
     while(i < text.length) {
       //x = a[i]
         if (feature(fsindex).run(text,i) == 1) {
@@ -88,7 +106,6 @@ class AnotherIIS (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:Array
         }
       i += 1
     }
-    println("calulated emp")
     sum
   }
 
@@ -97,7 +114,10 @@ class AnotherIIS (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:Array
     var delta:Double = 1.0
     delta /= m
     println("calulating delta")
-    delta *=math.log(empirical_p(index)/plamdba(index))
+    var emp = (empp(index).toDouble)
+    var pl =  (plamdba(index))
+    println("EMP:%f,PL:%f".format(emp,pl))
+    delta *=math.log( emp / pl)
     println("calulated delta")
     delta
   }
@@ -105,7 +125,6 @@ class AnotherIIS (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:Array
     //M=sigma(fi(x,y)forallx,y)
     var i = 0
     var sum = 0
-    println("calulating calM")
     while(i < text.length) {
       //x = a[i]
       for (featurei <- feature) {
@@ -115,28 +134,32 @@ class AnotherIIS (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:Array
       }
       i += 1
     }
-    println("calulated calM")
     sum
   }
   def trainiis() {
     var stop = true
-    println("training iis")
     var i = 0
+    var t = 2
     do {
-      i = 0
+      i =  0
+      t -= 1
       while(i < length) {
-        print("calculating lambda  %d".format(i))
+        println("calculating lambda  %d".format(i))
         var delta = calculateDelta(i)
         alambda(i) += delta
         if(delta == 0)
           stop = false
+        //println("calculated lambda  %d %f".format(i,delta))
         i += 1
-        print("calculated lambda  %d".format(i))
       }
       println("-------------")
-      alambda.map(x=>println(x))
-      println("-------------")
-    }while(!stop)
+      i = 0
+      while(i < alambda.length) {
+        print("%f  ".format(alambda(i)))
+        i += 1
+      }
+      println("\n-------------")
+    }while(t > 0)
 
   }
 }
