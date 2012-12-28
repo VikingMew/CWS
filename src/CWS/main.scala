@@ -27,15 +27,19 @@ object main {
     var tag = Reader.TagRead("dat/ctb7_mz_pos_tags.utf8")
     val head = text.head
     head.map(x=>print(x))
-    val template= List(('s',0))
+    val template1= List(('c',0))
     var unselected = List[List[(Char,Int)]]()
     var selected = List[List[(Char,Int)]]()
-    var ftemplate = new FeatureTemplate(template)
-    ftemplate.createFeature(text.head)
-    var featuresets = ftemplate.list.toList
+    var ftemplate1 = new FeatureTemplate(template1)
+//    var ftemplate2 = new FeatureTemplate(template2)
+    ftemplate1.createFeature(text)
+//    ftemplate2.createFeature(text)
+    var featuresets1 = ftemplate1.list.toList
+//    var featuresets2 = ftemplate2.list.toList
+    var featuresets = featuresets1 //:::featuresets2
     println(featuresets)
     println("created,length=%s".format(featuresets.size))
-    var iis = new AnotherIIS(featuresets,text.head,tag._1.toList)
+    var iis = new AnotherIIS(featuresets,text,tag._1.toList)
     iis.alambda.map(x=>print(x))
 //    while(!unselected.isEmpty) {
 //      //2
@@ -49,7 +53,7 @@ object main {
 //          while(i < sentence.length) {
 //            for(featureset <- featuresets) {
 //              var active2 = List[(List[(String,Char,Int)],String)]()
-//              var f = new Feature(featureset)
+//              var f = new FeatureRun(featureset)
 //              if (f.run(sentence,i)==1) {
 //                active2 = featureset :: active2
 //              }

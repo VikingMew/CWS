@@ -15,7 +15,7 @@ import collection.mutable.HashSet
  * Time: 2:01 AM
  * To change this template use File | Settings | File Templates.
  */
-//Feature List
+//FeatureRun List
 //c: character
 //t: tag
 //p: pos tag
@@ -25,7 +25,7 @@ import collection.mutable.HashSet
 //l: length of word        (not implemented)
 //r: repeat char           (not implemented)
 
-//object Feature {
+//object FeatureRun {
 //  //val t = List[Array]();
 //  def c(a:Array[Point],index:Int,offset:Int) :(Array[Point],Int)=>Int = {
 //    if(index+offset>=0 && index+offset < a.length)
@@ -53,29 +53,30 @@ import collection.mutable.HashSet
 //  //def createc
 //}
 
+
 class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
   val template = featuretemplateset
   val maxoffset = template.map(x => x._2).max
   val minoffset = template.map(x => x._2).min
 
-  //var list = new HashMap[List[String],Feature]()
+  //var list = new HashMap[List[String],FeatureRun]()
   var list =  new mutable.HashSet[(List[(String,Char,Int)],String)]()
-  def createFeature(a:Array[Point],offset:Int) = {
+  def createFeature(a:Array[T.Point],offset:Int) = {
     var l = List[(String,Char,Int)]()
     if (offset + maxoffset < a.length && offset + minoffset >= 0) {
       for(x <- template) {
         val t = x._1 match{
-          case 'c' => (a(offset + x._2).c.toString, x._1, x._2)
-          case 't' => (a(offset + x._2).t.toString, x._1, x._2)
-          case 'p' => (a(offset + x._2).pos.toString, x._1, x._2)
+          case 'c' => (a(offset + x._2)._1.toString, x._1, x._2)
+          case 't' => (a(offset + x._2)._2.toString, x._1, x._2)
+          case 'p' => (a(offset + x._2)._3.toString, x._1, x._2)
           case 'u' => {
-            if(""" ?「」，。《》、：""" contains a(offset + x._2).c)
+            if(""" ?「」，。《》、：""" contains a(offset + x._2)._1)
               ("T" , x._1, x._2)
             else
               ("F" , x._1, x._2)
           }
           case 's' => {
-            if(a(offset + x._2).t == "S")
+            if(a(offset + x._2)._2 == "S")
               ("T" , x._1, x._2)
             else
               ("F" , x._1, x._2)
@@ -84,14 +85,14 @@ class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
         l = t :: l
       }
       l = l.reverse
-      val l1 = (l,a(offset).t)
+      val l1 = (l,a(offset)._2)
       if (!list.contains(l1)) {
         list.add(l1)
       }
     }
     l
   }
-  def createFeature(a:Array[Point]):List[(List[(String,Char,Int)],String)]= {
+  def createFeature(a:Array[T.Point]):List[(List[(String,Char,Int)],String)]= {
     val length = a.length
     var i = 0
     var list2 = List[List[(String,Char,Int)]]()
@@ -101,7 +102,7 @@ class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
     }
     list.toList
   }
-  def createFeature(a:List[Array[Point]]) :List[(List[(String,Char,Int)],String)]= {
+  def createFeature(a:List[Array[T.Point]]) :List[(List[(String,Char,Int)],String)]= {
     a.map(x => createFeature(x)).flatten
     list.toList
   }
@@ -126,29 +127,32 @@ class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
 class Feature(carg:(List[(String,Char,Int)],String)) {
   val arg = carg._1
   val y = carg._2
-  def run(b:Array[Point],index2:Int) = {
-    if(b(index2).t.equals(y))
-      arg.map(x => cal(b,index2,x)).reduce(_&_)
-    else
-      0
+  def checkx(b:Array[T.Point],index2:Int) :Int = {
+    arg.map(x => cal(b,index2,x)).reduce(_&_)
   }
-  def cal(b:Array[Point],index2:Int,t:(String,Char,Int)):Int = {
+  def checky(y:String) :Int = {
+    if(y equals this.y) 1 else 0
+  }
+  def run(b:Array[T.Point],index2:Int,y:String) :Int = {
+    checkx(b,index2) & checky(y)
+  }
+  private def cal(b:Array[T.Point],index2:Int,t:(String,Char,Int)):Int = {
     t._2 match {
       case 'c' => {
-        if(t._1 contains b(index2+t._3).c) 1 else 0
+        if(t._1 contains b(index2+t._3)._1) 1 else 0
       }
       case 't' => {
-        if(t._1 contains b(index2 + t._3).t) 1 else 0
+        if(t._1 == b(index2 + t._3)._2) 1 else 0
       }
       case 'p' => {
-        if(t._1 contains b(index2+t._3).pos) 1 else 0
+        if(t._1 == b(index2+t._3)._3) 1 else 0
       }
       case 'u' => {
-        val v = if(""" ?「」，。《》、：""" contains b(index2 + t._3).c) 1 else 0
+        val v = if(""" ?「」，。《》、：""" contains b(index2 + t._3)._1) 1 else 0
         if ("T" contains t._1) v else 1 - v
       }
       case 's' => {
-        val v = if(b(index2 + t._3).t == "S") 1 else 0
+        val v = if(b(index2 + t._3)._2 == "S") 1 else 0
         if ("T" contains t._1) v else 1 - v
       }
     }
