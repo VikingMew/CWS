@@ -63,20 +63,25 @@ class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
   var list =  new mutable.HashSet[(List[(String,Char,Int)],String)]()
   def createFeature(a:Array[T.Point],offset:Int) = {
     var l = List[(String,Char,Int)]()
-    if (offset + maxoffset < a.length && offset + minoffset >= 0) {
       for(x <- template) {
-        val t = x._1 match{
-          case 'c' => (a(offset + x._2)._1.toString, x._1, x._2)
-          case 't' => (a(offset + x._2)._2.toString, x._1, x._2)
-          case 'p' => (a(offset + x._2)._3.toString, x._1, x._2)
+        val p = {
+        if(offset + x._2 < 0 || offset + x._2 > a.length)
+          new T.Point(0,"","")
+        else
+          a(offset + x._2)
+        }
+        val t = x._1 match {
+          case 'c' => (p._1.toString, x._1, x._2)
+          case 't' => (p._2.toString, x._1, x._2)
+          case 'p' => (p._3.toString, x._1, x._2)
           case 'u' => {
-            if(""" ?「」，。《》、：""" contains a(offset + x._2)._1)
+            if((""" ?「」，。《》、：""" contains p._1))
               ("T" , x._1, x._2)
             else
               ("F" , x._1, x._2)
           }
           case 's' => {
-            if(a(offset + x._2)._2 == "S")
+            if(p._2 == "S")
               ("T" , x._1, x._2)
             else
               ("F" , x._1, x._2)
@@ -89,7 +94,7 @@ class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
       if (!list.contains(l1)) {
         list.add(l1)
       }
-    }
+
     l
   }
   def createFeature(a:Array[T.Point]):List[(List[(String,Char,Int)],String)]= {
@@ -137,22 +142,28 @@ class Feature(carg:(List[(String,Char,Int)],String)) {
     checkx(b,index2) & checky(y)
   }
   private def cal(b:Array[T.Point],index2:Int,t:(String,Char,Int)):Int = {
+    val p = {
+      if(index2+t._3 < 0 || index2+t._3 > b.length)
+        new T.Point(0,"","")
+      else
+        b(index2+t._3)
+    }
     t._2 match {
       case 'c' => {
-        if(t._1 contains b(index2+t._3)._1) 1 else 0
+        if(t._1 contains p._1) 1 else 0
       }
       case 't' => {
-        if(t._1 == b(index2 + t._3)._2) 1 else 0
+        if(t._1 == p._2) 1 else 0
       }
       case 'p' => {
-        if(t._1 == b(index2+t._3)._3) 1 else 0
+        if(t._1 == p._3) 1 else 0
       }
       case 'u' => {
-        val v = if(""" ?「」，。《》、：""" contains b(index2 + t._3)._1) 1 else 0
+        val v = if(""" ?「」，。《》、：""" contains p._1) 1 else 0
         if ("T" contains t._1) v else 1 - v
       }
       case 's' => {
-        val v = if(b(index2 + t._3)._2 == "S") 1 else 0
+        val v = if(p._2 == "S") 1 else 0
         if ("T" contains t._1) v else 1 - v
       }
     }

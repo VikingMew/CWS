@@ -9,16 +9,18 @@ import collection.mutable
  * Time: 8:32 PM
  */
 class AnotherIIS (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[T.Point]],clabels:List[String]) {
-  var text = ctext
-  var featureset = cfeatureset.toArray
-  var labels = clabels
+  val text = ctext
+  val featureset = cfeatureset.toArray
+  val labels = clabels
 
-  var count:Int = text.length
+  val count:Int = text.length
 
   //  var windowoffset = (-1,1)
   val length = featureset.length
-
   var features = new Array[Feature](length)
+  var allword = new mutable.HashMap[Int,List[(String,Char,Int)]]()
+  var allwordfeature = new mutable.HashMap[Int,Int]()
+  var allfeaturefreq = new mutable.HashMap[Int,Int]()
   var allwordfreq = new mutable.HashMap[Int,Int]()
   var emp_dist = mutable.HashMap[Int,Int]()
   var f_total = mutable.HashMap[Int,Int]()
@@ -41,13 +43,19 @@ class AnotherIIS (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[
       var i = 0
       while(i < sentences.length) {
         for (j <- 0 until length) {
-          if (features(i).run(sentences,i,sentences(i)._2) == 1) {
-              if(!(allwordfreq contains i))
-                allwordfreq.put(,1)
-              else
-                allwordfreq.update(i,allwordfreq.get(i).get + 1)
+          if (features(j).checkx(sentences,i) == 1) {
+            if(!(allwordfreq contains j))
+              allwordfreq.put(j,1)
+            else
+              allwordfreq.update(j,allwordfreq.get(j).get + 1)
           }
-//          for
+
+          if (features(j).run(sentences,i,sentences(i)._2) == 1) {
+            if(!(allfeaturefreq contains j))
+              allfeaturefreq.put(j,1)
+            else
+              allfeaturefreq.update(j,allfeaturefreq.get(j).get + 1)
+           }
         }
         i += 1
       }
@@ -56,10 +64,14 @@ class AnotherIIS (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[
 
 
   def calculateDelta(index:Int):Double = {
-    //delta = 1/m * log (p(fi)/plamdba(fi))
-    var delta:Double = 1.0
+    //simga(simga(f)plambda(y|x)exp(delta*flambda#)) = ~p(f)
+    // ~p(f) = ~p(x)plambda(y|x)*exp(feature#)
+    var delta:Double = 0.0
     println("calulating delta")
-
+    var t = 10000
+    while(t > 0){
+      t -= 1
+    }
     println("calulated delta")
     delta
   }
@@ -70,7 +82,12 @@ class AnotherIIS (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[
     var t = 100000
     setfeature()
     getword()
-    0 u
+    (0 until length).foreach(x=>{
+      print(featureset(x))
+      print(allwordfreq(x))
+      print("  ")
+      println(allfeaturefreq(x))
+    })
 //    do {
 //      i =  0
 //      t -= 1

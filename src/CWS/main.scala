@@ -26,8 +26,9 @@ object main {
     val text2 = Reader.seg2Read("dat/ctb7_mz_pos.utf8")
     var tag = Reader.TagRead("dat/ctb7_mz_pos_tags.utf8")
     val head = text.head
-    head.map(x=>print(x))
-    val template1= List(('c',0))
+//    head.map(x=>print(x))
+//    println()
+    val template1= List(('t',-1))
     var unselected = List[List[(Char,Int)]]()
     var selected = List[List[(Char,Int)]]()
     var ftemplate1 = new FeatureTemplate(template1)
@@ -40,7 +41,7 @@ object main {
     println(featuresets)
     println("created,length=%s".format(featuresets.size))
     var iis = new AnotherIIS(featuresets,text,tag._1.toList)
-    iis.alambda.map(x=>print(x))
+    print(iis.alambda.mkString("  "))
 //    while(!unselected.isEmpty) {
 //      //2
 //      for (ts <- unselected) {
@@ -52,7 +53,7 @@ object main {
 //          var i = 0
 //          while(i < sentence.length) {
 //            for(featureset <- featuresets) {
-//              var active2 = List[(List[(String,Char,Int)],String)]()
+//              var activ e2 = List[(List[(String,Char,Int)],String)]()
 //              var f = new FeatureRun(featureset)
 //              if (f.run(sentence,i)==1) {
 //                active2 = featureset :: active2
