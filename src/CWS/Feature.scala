@@ -141,6 +141,92 @@ class Feature(carg:(List[(String,Char,Int)],String)) {
   def run(b:Array[T.Point],index2:Int,y:String) :Int = {
     checkx(b,index2) & checky(y)
   }
+  def run(x:List[(String,Char,Int)],y:String):Int = {
+    var maxoffset = x.map(x=>x._3).max
+    var minoffset = x.map(x=>x._3).min
+    var arr = Array.fill[T.Point](maxoffset - minoffset + 1){(0,"","" )}
+    for (i <- x) {
+      val tmp = i._3 - minoffset
+      i._2 match {
+        case 'c' => {
+          arr(tmp) = (i._1.charAt(0),arr(tmp)._2,arr(tmp)._3)
+        }
+        case 't' => {
+          arr(tmp) = (arr(tmp)._1  ,i._1        ,arr(tmp)._3)
+        }
+        case 'p' => {
+          arr(tmp) = (arr(tmp)._1  ,arr(tmp)._2,        i._1)
+        }
+        case 'u' => {
+          if(i._1 == "T") {
+            arr(tmp) = ('》',arr(tmp)._2,arr(tmp)._3)
+          }
+        }
+        case 's' => {
+          if(i._1 == "T") {
+            arr(tmp) = (arr(tmp)._1,"S",arr(tmp)._3)
+          }
+        }
+      }
+    }
+//    for(i <- x) {
+//      i._2 match {
+//        case 'c' => {
+//          for(j <- arg) {
+//            if(i._3 == j._3 && i._2 == j._2) {
+//              if (i._1 != j._1) {
+//                return 0
+//              }
+//            }
+//          }
+//        }
+//        case 't' => {
+//          for(j <- arg) {
+//            if(i._3 == j._3 && i._2 == j._2) {
+//              if (i._1 != j._1) {
+//                return 0
+//              }
+//            }
+//          }
+//        }
+//        case 'p' => {
+//          for(j <- arg) {
+//            if(i._3 == j._3 && i._2 == j._2) {
+//              if (i._1 != j._1) {
+//                return 0
+//              }
+//            }
+//          }
+//        }
+//        case 'u' => {
+//          for(j <- arg) {
+//            if(i._3 == j._3 && i._2 == j._2) {
+//              if (i._1 != j._1) {
+//                return 0
+//              }
+//            }
+//          }
+//        }
+//        case 's' => {
+//          for(j <- arg) {
+//            if(i._3 == j._3 && i._2 == j._2) {
+//              if (i._1 != j._1) {
+//                return 0
+//              }
+//            }
+//          }
+//        }
+//      }
+//      for(j <- arg) {
+//        if(i._3 == j._3 && i._2 == j._2) {
+//          if (i._1 != j._1) {
+//            return 0
+//          }
+//        }
+//      }
+//    }
+    return checkx(arr,-minoffset) &checky(y)
+  }
   private def cal(b:Array[T.Point],index2:Int,t:(String,Char,Int)):Int = {
     val p = {
       if(index2+t._3 < 0 || index2+t._3 > b.length)

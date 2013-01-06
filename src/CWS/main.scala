@@ -40,8 +40,10 @@ object main {
     var featuresets = featuresets1 //:::featuresets2
     println(featuresets)
     println("created,length=%s".format(featuresets.size))
-    var iis = new AnotherIIS(featuresets,text,tag._1.toList)
-    print(iis.alambda.mkString("  "))
+    var iis = new IIS4(featuresets,text,tag._1.toList)
+    println(iis.alambda.mkString("  "))
+    println(iis.ll)
+
 //    while(!unselected.isEmpty) {
 //      //2
 //      for (ts <- unselected) {

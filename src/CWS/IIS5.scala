@@ -8,7 +8,7 @@ import collection.mutable
  * Date: 12/26/12
  * Time: 8:32 PM
  */
-class IIS4 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[T.Point]],clabels:List[String]) {
+class IIS5 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[T.Point]],clabels:List[String]) {
   val text = ctext
   val featureset = cfeatureset.toArray
   val labels = clabels
