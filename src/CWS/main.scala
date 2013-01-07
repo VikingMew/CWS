@@ -28,7 +28,7 @@ object main {
     val head = text.head
 //    head.map(x=>print(x))
 //    println()
-    val template1= List(('t',-1))
+    val template1= List(('t',0))
     var unselected = List[List[(Char,Int)]]()
     var selected = List[List[(Char,Int)]]()
     var ftemplate1 = new FeatureTemplate(template1)
@@ -40,7 +40,7 @@ object main {
     var featuresets = featuresets1 //:::featuresets2
     println(featuresets)
     println("created,length=%s".format(featuresets.size))
-    var iis = new IIS4(featuresets,text,tag._1.toList)
+    var iis = new IIS5(featuresets,text,tag._1.toList)
     println(iis.alambda.mkString("  "))
     println(iis.ll)
 

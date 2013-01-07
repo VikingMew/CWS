@@ -202,13 +202,13 @@ def getFormulaPara(index:Int) = {
         alambda(i) += delta
 //        println("calculated lambda  %d %f".format(i,alambda(i)))
       })
-            println("-iter %d------------".format(y))
+            println("-iter %d------------%f".format(y,this.loglihood()))
             i = 0
             while(i < alambda.length) {
-              println("%f  %f %d".format(alambda(i),allwordfreq(i)*calpyx(i,featureset(i)._2),allfeaturefreq(i)))
+             // println("%f  %f %d".format(alambda(i),allwordfreq(i)*calpyx(i,featureset(i)._2),allfeaturefreq(i)))
               i += 1
             }
-            println("\n-------------")
+//            println("\n-iter %d------------".format(y))
     })
 
 //    do {
