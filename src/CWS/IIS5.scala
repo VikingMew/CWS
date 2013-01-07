@@ -202,20 +202,21 @@ class IIS5 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
 
   def trainiis() {
      var i = 0
-    (0 until 1).foreach(y=>{
+    while(i < 100){
+      var stop = true
       for (j <- 0 until length){
         var delta = calculateDelta(j)
         alambda(j) += delta
+        if (delta > 1e-12)
+          stop = false
       }
-      println("-iter %d------------".format(y))
-      i = 0
-      while(i < alambda.length) {
-        print("%f ".format(alambda(i)))
-        i += 1
-      }
-
-      println("\n-iter %d------------")
-    })
+      println("-iter %d------------".format(i))
+      println(alambda.mkString(" "))
+      println("-iter %d------------".format(i))
+      if (stop)
+        i = 100
+      i += 1
+    }
   }
 }
 
