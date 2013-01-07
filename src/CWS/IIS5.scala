@@ -18,13 +18,13 @@ class IIS5 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
   def getx() = {
     var l = List[List[(String,Char,Int)]]()
     for(f <- featureset) {
-      if(l contains f._1) {
+      if(!(l contains f._1)) {
         l = f._1 :: l
       }
     }
     l.toArray
   }
-  println(xlist.mkString("  "))
+
   var xfreq = Array.fill[Int](xlist.length){0}                    //xindex ->xfreq
   getxfreq()
   def getxfreq() {
@@ -34,13 +34,14 @@ class IIS5 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
         var i = 0
         while(i < sentences.length) {
           if (f.checkx(sentences,i) == 1) {
-            xfreq(i) += 1
+            xfreq(xindex) += 1
           }
           i += 1
         }
       }
     }
   }
+
   val ylist = clabels.toArray                                       //yindex -> y
 
 //  var fsmap = new Array[(Int,Int)](length)                  //fsindex -> xindex,yindex
@@ -51,7 +52,7 @@ class IIS5 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
 //    }
 //  }
 
-  var xyfreq = new mutable.HashMap[(Int,Int),Int]()                       //xyindex -> xyfreq
+  var xyfreq = Array.fill[Int](xlist.length,ylist.length){0}                       //xyindex -> xyfreq
   getxyfreq()
   def getxyfreq() {
     for (sentences <- text) {
@@ -60,11 +61,8 @@ class IIS5 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
           val f = new Feature((xlist(xindex),ylist(yindex)))
           var i = 0
           while(i < sentences.length) {
-            if (f.run(sentences,i,ylist(yindex)) == 1) {
-              if(!(xyfreq contains (xindex,yindex)))
-                xyfreq.put((xindex,yindex),1)
-              else
-                xyfreq.update((xindex,yindex),xyfreq.get((xindex,yindex)).get + 1)
+            if (f.run(sentences,i,sentences(i)._2) == 1) {
+              xyfreq(xindex)(yindex) += 1
             }
             i += 1
           }
@@ -91,7 +89,7 @@ class IIS5 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
       for(xindex <- 0 until xlist.length) {
         for (yindex <- 0 until ylist.length) {
           if(features(findex).run(xlist(xindex),ylist(yindex)) == 1) {
-            featurefreq(findex) += xyfreq((xindex,yindex))
+            featurefreq(findex) += xyfreq(xindex)(yindex)
           }
         }
       }
@@ -170,7 +168,6 @@ class IIS5 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
     //simga(simga(f)plambda(y|x)exp(delta*flambda#)) = ~p(f)
     // ~p(f) = ~p(x)plambda(y|x)*exp(feature#)
     var delta:Double = 1
-//    println("calulating delta")
     val para = getFormulaPara(findex)
     var t = 300
     val ffreq = featurefreq(findex)
@@ -194,55 +191,31 @@ class IIS5 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
           sum1 += xfreq(xindex) * para(xindex)._1 * math.exp(delta * para(xindex)._2)
           //sum2 += abebx
           sum2 += xfreq(xindex) * para(xindex)._1 * para(xindex)._2 * math.exp(delta * para(xindex)._2)
-
       }
       delta -= ((ffreq.toDouble - sum1))/(-sum2)
       if (math.abs((ffreq - sum1)/(-sum2)) < 1e-12)
         t = 0
       t -= 1
     }
-//    println("calulated delta %f".format(delta))
     delta
   }
 
   def trainiis() {
      var i = 0
-    (0 until 100).foreach(y=>{
-      (0 until length).foreach(i=>{
-        var delta = calculateDelta(i)
-        alambda(i) += delta
-//        println("calculated lambda  %d %f".format(i,alambda(i)))
-      })
-            println("-iter %d------------".format(y))
-            i = 0
-            while(i < alambda.length) {
-              print("%f ".format(alambda(i)))
-              i += 1
-            }
-            println("\n-iter %d------------")
+    (0 until 1).foreach(y=>{
+      for (j <- 0 until length){
+        var delta = calculateDelta(j)
+        alambda(j) += delta
+      }
+      println("-iter %d------------".format(y))
+      i = 0
+      while(i < alambda.length) {
+        print("%f ".format(alambda(i)))
+        i += 1
+      }
+
+      println("\n-iter %d------------")
     })
-
-//    do {
-//      i =  0
-//      t -= 1
-//      while(i < length) {
-//        println("calculating lambda  %d".format(i))
-//        var delta = calculateDelta(i)
-//        alambda(i) += delta
-//        if(delta == 0)
-//          stop = false
-//        //println("calculated lambda  %d %f".format(i,delta))
-//        i += 1
-//      }
-//      println("-------------")
-//      i = 0
-//      while(i < alambda.length) {
-//        print("%f  ".format(alambda(i)))
-//        i += 1
-//      }
-//      println("\n-------------")
-//    }while(t > 0)
-
   }
 }
 
