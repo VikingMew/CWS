@@ -28,18 +28,19 @@ object main {
     val head = text.head
 //    head.map(x=>print(x))
 //    println()
-    val template1= List(('c',2))
+    val template1= List(('t',-1))
+    val template2= List(('c',0))
     var unselected = List[List[(Char,Int)]]()
     var selected = List[List[(Char,Int)]]()
     var ftemplate1 = new FeatureTemplate(template1)
-//    var ftemplate2 = new FeatureTemplate(template2)
+    var ftemplate2 = new FeatureTemplate(template2)
     ftemplate1.createFeature(text)
-//    ftemplate2.createFeature(text)
+    ftemplate2.createFeature(text)
     var featuresets1 = ftemplate1.list.toList
-//    var featuresets2 = ftemplate2.list.toList
-    var featuresets = featuresets1 //:::featuresets2
+    var featuresets2 = ftemplate2.list.toList
+    var featuresets = featuresets1 ::: featuresets2
     println("created,length=%s".format(featuresets.size))
-    var iis = new IIS5(featuresets,text,tag._1.toList)
+    var iis = new IIS2(featuresets,text,tag._1.toList)
     println(iis.ll)
 
 //    while(!unselected.isEmpty) {

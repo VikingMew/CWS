@@ -169,62 +169,6 @@ class Feature(carg:(List[(String,Char,Int)],String)) {
         }
       }
     }
-//    for(i <- x) {
-//      i._2 match {
-//        case 'c' => {
-//          for(j <- arg) {
-//            if(i._3 == j._3 && i._2 == j._2) {
-//              if (i._1 != j._1) {
-//                return 0
-//              }
-//            }
-//          }
-//        }
-//        case 't' => {
-//          for(j <- arg) {
-//            if(i._3 == j._3 && i._2 == j._2) {
-//              if (i._1 != j._1) {
-//                return 0
-//              }
-//            }
-//          }
-//        }
-//        case 'p' => {
-//          for(j <- arg) {
-//            if(i._3 == j._3 && i._2 == j._2) {
-//              if (i._1 != j._1) {
-//                return 0
-//              }
-//            }
-//          }
-//        }
-//        case 'u' => {
-//          for(j <- arg) {
-//            if(i._3 == j._3 && i._2 == j._2) {
-//              if (i._1 != j._1) {
-//                return 0
-//              }
-//            }
-//          }
-//        }
-//        case 's' => {
-//          for(j <- arg) {
-//            if(i._3 == j._3 && i._2 == j._2) {
-//              if (i._1 != j._1) {
-//                return 0
-//              }
-//            }
-//          }
-//        }
-//      }
-//      for(j <- arg) {
-//        if(i._3 == j._3 && i._2 == j._2) {
-//          if (i._1 != j._1) {
-//            return 0
-//          }
-//        }
-//      }
-//    }
     return checkx(arr,-minoffset) &checky(y)
   }
   private def cal(b:Array[T.Point],index2:Int,t:(String,Char,Int)):Int = {
