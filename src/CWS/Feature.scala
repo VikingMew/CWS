@@ -65,7 +65,7 @@ class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
     var l = List[(String,Char,Int)]()
       for(x <- template) {
         val p = {
-        if(offset + x._2 < 0 || offset + x._2 > a.length)
+        if(offset + x._2 < 0 || offset + x._2 >= a.length)
           new T.Point(0,"","")
         else
           a(offset + x._2)
@@ -229,7 +229,7 @@ class Feature(carg:(List[(String,Char,Int)],String)) {
   }
   private def cal(b:Array[T.Point],index2:Int,t:(String,Char,Int)):Int = {
     val p = {
-      if(index2+t._3 < 0 || index2+t._3 > b.length)
+      if(index2+t._3 < 0 || index2+t._3 >= b.length)
         new T.Point(0,"","")
       else
         b(index2+t._3)

@@ -207,7 +207,7 @@ class IIS5 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
       for (j <- 0 until length){
         var delta = calculateDelta(j)
         alambda(j) += delta
-        if (delta > 1e-12)
+        if (delta > 1e-16)
           stop = false
       }
       println("-iter %d------------".format(i))

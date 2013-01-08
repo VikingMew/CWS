@@ -28,7 +28,7 @@ object main {
     val head = text.head
 //    head.map(x=>print(x))
 //    println()
-    val template1= List(('t',0))
+    val template1= List(('c',2))
     var unselected = List[List[(Char,Int)]]()
     var selected = List[List[(Char,Int)]]()
     var ftemplate1 = new FeatureTemplate(template1)
