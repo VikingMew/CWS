@@ -25,7 +25,7 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
         i += 1
       }
     }
-    println(l)
+//    println(l)
     l.toArray
   }
   println(xlist.length)

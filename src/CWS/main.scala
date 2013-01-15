@@ -8,8 +8,8 @@ package CWS
  */
 
 
-object Main {
-  def main(args:Array[String])  {
+object Miao {
+  def main(args:Array[String]) = {
     time(m)
   }
   def time[A](a: => A) = {
@@ -20,14 +20,13 @@ object Main {
     result
   }
 
-  def m {
+  def m = {
     val text = Reader.segRead("dat/ctb7_mz_seg.utf8")
     //val text2 = Reader.seg2Read("dat/ctb7_mz_pos.utf8")
     var tag = Reader.TagRead("dat/ctb7_mz_pos_tags.utf8")
     val head = text.head
-//    head.map(x=>print(x))
-//    println()
-    val template1= List(('c',-2))
+    val template1= List(('t',-2),('t',-1),('c',0))
+    println(template1)
 //    val template2= List(())
     var unselected = List[List[(Char,Int)]]()
     var selected = List[List[(Char,Int)]]()
