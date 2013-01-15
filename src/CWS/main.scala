@@ -8,7 +8,7 @@ package CWS
  */
 
 
-object main {
+object Main {
   def main(args:Array[String])  {
     time(m)
   }
@@ -21,26 +21,25 @@ object main {
   }
 
   def m {
-    Reader.segRead("dat/ctb7_mz_seg.utf8")
-    val text = Reader.segRead("dat/ctb7_mz_pos.utf8")
-    val text2 = Reader.seg2Read("dat/ctb7_mz_pos.utf8")
+    val text = Reader.segRead("dat/ctb7_mz_seg.utf8")
+    //val text2 = Reader.seg2Read("dat/ctb7_mz_pos.utf8")
     var tag = Reader.TagRead("dat/ctb7_mz_pos_tags.utf8")
     val head = text.head
 //    head.map(x=>print(x))
 //    println()
-    val template1= List(('t',-1))
-    val template2= List(('c',0))
+    val template1= List(('c',-2))
+//    val template2= List(())
     var unselected = List[List[(Char,Int)]]()
     var selected = List[List[(Char,Int)]]()
     var ftemplate1 = new FeatureTemplate(template1)
-    var ftemplate2 = new FeatureTemplate(template2)
+//    var ftemplate2 = new FeatureTemplate(template2)
     ftemplate1.createFeature(text)
-    ftemplate2.createFeature(text)
+//    ftemplate2.createFeature(text)
     var featuresets1 = ftemplate1.list.toList
-    var featuresets2 = ftemplate2.list.toList
-    var featuresets = featuresets1 ::: featuresets2
+//    var featuresets2 = ftemplate2.list.toList
+    var featuresets = featuresets1 //::: featuresets2
     println("created,length=%s".format(featuresets.size))
-    var iis = new IIS2(featuresets,text,tag._1.toList)
+    var iis = new IIS3(featuresets,text,tag._1.toList)
     println(iis.ll)
 
 //    while(!unselected.isEmpty) {

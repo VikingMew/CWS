@@ -1,13 +1,14 @@
 package CWS
 
+import collection.mutable
 
 /**
-* Created with IntelliJ IDEA.
-* User: vikingmew
-* Date: 12/26/12
-* Time: 8:32 PM
-*/
-class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[util.Point]],clabels:List[String]) {
+ * Created with IntelliJ IDEA.
+ * User: vikingmew
+ * Date: 12/26/12
+ * Time: 8:32 PM
+ */
+class IIS4 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[util.Point]],clabels:List[String]) {
   val text = ctext
   val count:Int = text.length
   val featureset = cfeatureset.toArray
@@ -15,6 +16,7 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
   var xlist = getx()    //xindex ->x
   def getx() = {
     var l = List[util.Window]()
+    var m = mutable.HashMap
     for (sentences <- text) {
       var i = 0
       while(i < sentences.length) {
@@ -28,12 +30,13 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
     println(l)
     l.toArray
   }
-  println(xlist.length)
+  println("miao")
   var xfreq = Array.fill[Int](xlist.length){0}                    //xindex ->xfreq
   getxfreq()
   def getxfreq() {
     for (sentences <- text) {
       for (xindex <- 0 until xlist.length) {
+        //val f = new Feature((xlist(xindex),""))
         var i = 0
         while(i < sentences.length) {
           var t = util.slice(sentences,i)
@@ -44,13 +47,17 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
         }
       }
     }
-    for (xindex <- 0 until xlist.length) {
-      if (xfreq(xindex) == 0)
-        println("!!!")
-    }
   }
-  println("miao")
+  println(xlist.length)
   val ylist = clabels.toArray                                       //yindex -> y
+
+//  var fsmap = new Array[(Int,Int)](length)                  //fsindex -> xindex,yindex
+//  getfsmap()
+//  def getfsmap(){
+//    for(findex <- 0 until features.length) {
+//
+//    }
+//  }
 
   var xyfreq = Array.fill[Int](xlist.length,ylist.length){0}                       //xyindex -> xyfreq
   getxyfreq()
@@ -58,6 +65,7 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
     for (sentences <- text) {
       for (xindex <- 0 until xlist.length) {
         for (yindex <- 0 until ylist.length) {
+          //val f = new Feature((xlist(xindex),ylist(yindex)))
           var i = 0
           while(i < sentences.length) {
             var t = util.slice(sentences,i)
@@ -81,19 +89,7 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
       i += 1
     }
   }
-//  var xyfeaturemap = Array.fill[Int](xlist.length,ylist.length,length){0}
-//  getxyfeature()
-//  def getxyfeature() = {
-//    (0 until length).foreach(findex =>{
-//      (0 until xlist.length).foreach(xindex =>{
-//        (0 until ylist.length).foreach(yindex =>{
-//          if (features(findex).run(xlist(xindex)._1.toArray,xlist(xindex)._2,ylist(yindex)) == 1) {
-//            xyfeaturemap(xindex)(yindex)(findex) = 1
-//          }
-//        })
-//      })
-//    })
-//  }
+
 
   var featurefreq = Array.fill[Int](length){0}                  //fsindex->fsfreq
   getfeaturefreq()
@@ -101,16 +97,11 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
     for (findex <- 0 until length) {
       for(xindex <- 0 until xlist.length) {
         for (yindex <- 0 until ylist.length) {
-            //featurefreq(findex) += xyfreq(xindex)(yindex) * xyfeaturemap(xindex)(yindex)(findex)
-                    if (features(findex).run(xlist(xindex)._1.toArray,xlist(xindex)._2,ylist(yindex)) == 1) {
-                      featurefreq(findex) += xyfreq(xindex)(yindex)
-                    }
+          if(features(findex).run(xlist(xindex)._1.toArray,xlist(xindex)._2,ylist(yindex)) == 1) {
+            featurefreq(findex) += xyfreq(xindex)(yindex)
+          }
         }
       }
-    }
-    for (findex <- 0 until length) {
-      if (featurefreq(findex) == 0)
-        println("!!!")
     }
   }
 
@@ -126,7 +117,19 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
       }
     }
   }
-
+  var xyfeaturemap = Array.fill[Int](xlist.length,ylist.length,length){0}
+  getxyfeature()
+  def getxyfeature() = {
+    (0 until length).foreach(findex =>{
+      (0 until xlist.length).foreach(xindex =>{
+        (0 until ylist.length).foreach(yindex =>{
+          if (features(findex).run(xlist(xindex)._1.toArray,xlist(xindex)._2,ylist(yindex)) == 1) {
+            xyfeaturemap(xindex)(yindex)(findex) = 1
+          }
+        })
+      })
+    })
+  }
   var alambda = Array.fill[Double](length){0.0}
   var ll :Double = 0.0
   println("miao")
@@ -151,10 +154,7 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
     var result:Double = 1
     var sum = 0.0
     for (findex <- 0 until length) {
-//      if (xyfeaturemap(xindex)(yindex)(findex) == 1) {
-//        sum += alambda(findex)
-//      }
-      if (features(findex).run(xlist(xindex)._1.toArray,xlist(xindex)._2,ylist(yindex)) == 1) {
+      if (xyfeaturemap(xindex)(yindex)(findex) == 1) {
         sum += alambda(findex)
       }
     }
@@ -170,12 +170,12 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
     for (yindex <- 0 until ylist.length) {
       var sum2:Double = 0
       for(findex <- 0 until length) {
-        if (features(findex).run(xlist(xindex)._1.toArray,xlist(xindex)._2,ylist(yindex)) == 1) {
-          sum2 += alambda(findex)
-        }
-//        if (xyfeaturemap(xindex)(yindex)(findex) == 1) {
-//          sum += alambda(findex)
+//        if (features(findex).run(xlist(xindex),1,ylist(yindex)) == 1) {
+//          sum2 += alambda(findex)
 //        }
+        if (xyfeaturemap(xindex)(yindex)(findex) == 1) {
+          sum += alambda(findex)
+        }
       }
 //      sum2 = (xyfeaturemap(xindex)(yindex),alambda).zipped.map((x,y)=>{(x.toDouble)*y}).sum
       sum += math.exp(sum2)
@@ -187,12 +187,12 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
     val para = Array.fill[(Double,Double)](xlist.length){(0.0,0.0)}  // eyx
     for(xindex <- 0 until xlist.length) {
       for (yindex <- 0 until ylist.length) {
-        if(features(findex).run(xlist(xindex)._1.toArray,xlist(xindex)._2,ylist(yindex)) == 1) {
-          para(xindex)  = (calpyx(xindex,yindex),fsharp(xindex)(yindex).toDouble) //plambda,fsharp
-        }
-//        if (xyfeaturemap(xindex)(yindex)(findex) == 1) {
+//        if(features(findex).run(xlist(xindex),1,ylist(yindex)) == 1) {
 //          para(xindex)  = (calpyx(xindex,yindex),fsharp(xindex)(yindex).toDouble) //plambda,fsharp
 //        }
+        if (xyfeaturemap(xindex)(yindex)(findex) == 1) {
+          para(xindex)  = (calpyx(xindex,yindex),fsharp(xindex)(yindex).toDouble) //plambda,fsharp
+        }
       }
     }
     para
@@ -202,7 +202,6 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
     // ~p(f) = ~p(x)plambda(y|x)*exp(feature#)
     var delta:Double = 1
     val para = getFormulaPara(findex)
-
     var t = 300
     val ffreq = featurefreq(findex)
     while(t > 0){
@@ -240,16 +239,12 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
       var stop = true
       for (j <- 0 until length){
         var delta = calculateDelta(j)
-        if (delta.isNaN)
-        {
-          printf("!!!!!%d".format(j))
-        }
         alambda(j) += delta
         if (delta > 1e-16)
           stop = false
       }
       println("-iter %d------------".format(i))
-      println(alambda.mkString(" "))
+//      println(alambda.mkString(" "))
       ll= loglihood()
       println(ll)
 //      for (xindex <- 0 until xlist.length) {
