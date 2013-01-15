@@ -236,7 +236,7 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
 
   def trainiis() {
      var i = 0
-    while(i < 100){
+    while(i < 1000){
       var stop = true
       for (j <- 0 until length){
         var delta = calculateDelta(j)
@@ -249,7 +249,7 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
           stop = false
       }
       println("-iter %d------------".format(i))
-      println(alambda.mkString(" "))
+//      println(alambda.mkString(" "))
       ll= loglihood()
       println(ll)
 //      for (xindex <- 0 until xlist.length) {
@@ -258,7 +258,7 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
 //      println()
       println("-iter %d------------".format(i))
       if (stop)
-        i = 100
+        i = 1000
       i += 1
     }
   }

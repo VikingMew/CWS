@@ -86,18 +86,37 @@ class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
             else
               ("F" , x._1, x._2)
           }
-//          case 'r' => {
-//            val p2 = {
-//              if(offset + x._2 - 1< 0 || offset + x._2 - 1 >= a.length)
-//                new util.Point(0,"","")
-//              else
-//                a(offset + x._2 - 1)
-//            }
-//            if ((p._1) == (p2._1))
-//              ("T" , x._1, x._2)
-//            else
-//              ("F" , x._1, x._2)
-//          }
+          case 'r' => {
+            val p2 = {
+              if(offset + x._2 - 1< 0 || offset + x._2 - 1 >= a.length)
+                new util.Point(0,"","")
+              else
+                a(offset + x._2 - 1)
+            }
+            if ((p._1) == (p2._1))
+              ("T" , x._1, x._2)
+            else
+              ("F" , x._1, x._2)
+          }
+          case 'w' => {
+            var i = 0
+            var word = ""
+            var cursor = 0
+            while(i > x._2)  {
+              while((offset + cursor > 0) && !("SB" contains a(offset + cursor)._2))
+                cursor -= 1
+              i-= 1
+            }
+            if ((offset + cursor > 0))
+              cursor -= 1
+            if ((offset + cursor > 0))
+              word = (a(offset + cursor)._1.toString) + word
+             while((offset + cursor > 0)  && !("SB" contains a(offset + cursor)._2)) {
+               cursor -= 1
+              word = (a(offset + cursor)._1.toString) + word
+            }
+            (word , x._1, x._2)
+          }
         }
         l = t :: l
       }
@@ -123,9 +142,9 @@ class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
     a.map(x => createFeature(x)).flatten
     list.toList
   }
-  def getFeatureFunc() = {
-    Unit
-  }
+//  def getFeatureFunc() = {
+//    Unit
+//  }
 }
 class Feature(carg:(List[(String,Char,Int)],String)) {
   val arg = carg._1
@@ -139,36 +158,36 @@ class Feature(carg:(List[(String,Char,Int)],String)) {
   def run(b:Array[util.Point],index2:Int,y:String) :Int = {
     checkx(b,index2) & checky(y)
   }
-//  def run(x:List[(String,Char,Int)],y:String):Int = {
-//    var maxoffset = x.map(x=>x._3).max
-//    var minoffset = x.map(x=>x._3).min
-//    var arr = Array.fill[util.Point](maxoffset - minoffset + 1){(0,"","" )}
-//    for (i <- x) {
-//      val tmp = i._3 - minoffset
-//      i._2 match {
-//        case 'c' => {
-//          arr(tmp) = (i._1.charAt(0),arr(tmp)._2,arr(tmp)._3)
-//        }
-//        case 't' => {
-//          arr(tmp) = (arr(tmp)._1  ,i._1        ,arr(tmp)._3)
-//        }
-//        case 'p' => {
-//          arr(tmp) = (arr(tmp)._1  ,arr(tmp)._2,        i._1)
-//        }
-//        case 'u' => {
-//          if(i._1 == "T") {
-//            arr(tmp) = ('》',arr(tmp)._2,arr(tmp)._3)
-//          }
-//        }
-//        case 's' => {
-//          if(i._1 == "T") {
-//            arr(tmp) = (arr(tmp)._1,"S",arr(tmp)._3)
-//          }
-//        }
-//      }
-//    }
-//    return checkx(arr,-minoffset) &checky(y)
-//  }
+  def run(x:List[(String,Char,Int)],y:String):Int = {
+    var maxoffset = x.map(x=>x._3).max
+    var minoffset = x.map(x=>x._3).min
+    var arr = Array.fill[util.Point](maxoffset - minoffset + 1){(0,"","" )}
+    for (i <- x) {
+      val tmp = i._3 - minoffset
+      i._2 match {
+        case 'c' => {
+          arr(tmp) = (i._1.charAt(0),arr(tmp)._2,arr(tmp)._3)
+        }
+        case 't' => {
+          arr(tmp) = (arr(tmp)._1  ,i._1        ,arr(tmp)._3)
+        }
+        case 'p' => {
+          arr(tmp) = (arr(tmp)._1  ,arr(tmp)._2,        i._1)
+        }
+        case 'u' => {
+          if(i._1 == "T") {
+            arr(tmp) = ('》',arr(tmp)._2,arr(tmp)._3)
+          }
+        }
+        case 's' => {
+          if(i._1 == "T") {
+            arr(tmp) = (arr(tmp)._1,"S",arr(tmp)._3)
+          }
+        }
+      }
+    }
+    return checkx(arr,-minoffset) &checky(y)
+  }
   private def cal(b:Array[util.Point],index2:Int,t:(String,Char,Int)):Int = {
     val p = b(index2+t._3)
     t._2 match {
@@ -189,14 +208,30 @@ class Feature(carg:(List[(String,Char,Int)],String)) {
         val v = if(p._2 == "S") 1 else 0
         if ("T" contains t._1) v else 1 - v
       }
-//      case 'r' => {
-//        val p2 = b(index2+t._3 -1)
-//        val v = if(p._2 == "S") 1 else 0
-//        if ((p._1) == (p2._1))
-//          ("T" , x._1, x._2)
-//        else
-//          ("F" , x._1, x._2)
-//      }
+      case 'r' => {
+        val p2 = b(index2+t._3 -1)
+        val v = if ((p._1) == (p2._1)) 1 else 0
+        if ("T" contains t._1) v else 1 - v
+      }
+      case 'w' => {
+        var i = 0
+        var word = ""
+        var cursor = 0
+        while(i > t._3)  {
+          while((index2 + cursor > 0) && !("SB" contains b(index2 + cursor)._2))
+            cursor -= 1
+          i-=1
+        }
+        if ((index2 + cursor > 0))
+          cursor -= 1
+        if ((index2 + cursor > 0))
+          word = (b(index2 + cursor)._1.toString) + word
+        while((index2 + cursor > 0)  && !("SB" contains b(index2 + cursor)._2)) {
+          cursor -= 1
+          word = (b(index2 + cursor)._1.toString) + word
+        }
+        if (word eq t._1) 1 else 0
+      }
     }
   }
 }
