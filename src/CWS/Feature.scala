@@ -73,7 +73,22 @@ class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
         val t = x._1 match {
           case 'c' => (p._1.toString, x._1, x._2)
           case 't' => (p._2.toString, x._1, x._2)
-          case 'p' => (p._3.toString, x._1, x._2)
+          case 'p' =>  {
+            var i = 0
+            var word = ""
+            var cursor = 0
+            while(i > x._2)  {
+              while((offset + cursor > 0) && !("SB" contains a(offset + cursor)._2))
+                cursor -= 1
+              i-= 1
+            }
+            if ((offset + cursor > 0))
+              cursor -= 1
+            if ((offset + cursor > 0))
+              word = a(offset + cursor)._3
+            (word, x._1, x._2)
+          }
+
           case 'u' => {
             if((""" ?「」，。《》、：""" contains p._1))
               ("T" , x._1, x._2)
@@ -92,6 +107,18 @@ class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
                 new util.Point(0,"","")
               else
                 a(offset + x._2 - 1)
+            }
+            if ((p._1) == (p2._1))
+              ("T" , x._1, x._2)
+            else
+              ("F" , x._1, x._2)
+          }
+          case 'R' => {
+            val p2 = {
+              if(offset + x._2 - 2< 0 || offset + x._2 - 2 >= a.length)
+                new util.Point(0,"","")
+              else
+                a(offset + x._2 - 2)
             }
             if ((p._1) == (p2._1))
               ("T" , x._1, x._2)
@@ -117,6 +144,72 @@ class FeatureTemplate(featuretemplateset:List[(Char,Int)]) {
             }
             (word , x._1, x._2)
           }
+          case 'b' => {
+            var i = 0
+            var word = ""
+            var cursor = 0
+            while(i > x._2)  {
+              while((offset + cursor > 0) && !("SB" contains a(offset + cursor)._2))
+                cursor -= 1
+              i-= 1
+            }
+            if ((offset + cursor > 0))
+              cursor -= 1
+            if ((offset + cursor > 0))
+              word = (a(offset + cursor)._1.toString) + word
+            while((offset + cursor > 0)  && !("SB" contains a(offset + cursor)._2)) {
+              cursor -= 1
+              word = (a(offset + cursor)._1.toString) + word
+            }
+            if (word.length > 0)
+              (word.charAt(0).toString , x._1, x._2)
+            else
+              ("" , x._1, x._2)
+          }
+          case 'e' => {
+            var i = 0
+            var word = ""
+            var cursor = 0
+            while(i > x._2)  {
+              while((offset + cursor > 0) && !("SB" contains a(offset + cursor)._2))
+                cursor -= 1
+              i-= 1
+            }
+            if ((offset + cursor > 0))
+              cursor -= 1
+            if ((offset + cursor > 0))
+              word = (a(offset + cursor)._1.toString) + word
+            while((offset + cursor > 0)  && !("SB" contains a(offset + cursor)._2)) {
+              cursor -= 1
+              word = (a(offset + cursor)._1.toString) + word
+            }
+            if (word.length > 0)
+              (word.last.toString , x._1, x._2)
+            else
+              ("" , x._1, x._2)
+          }
+          case 'l' => {
+            var i = 0
+            var word = ""
+            var cursor = 0
+            while(i > x._2)  {
+              while((offset + cursor > 0) && !("SB" contains a(offset + cursor)._2))
+                cursor -= 1
+              i-= 1
+            }
+            if ((offset + cursor > 0))
+              cursor -= 1
+            if ((offset + cursor > 0))
+              word = (a(offset + cursor)._1.toString) + word
+            while((offset + cursor > 0)  && !("SB" contains a(offset + cursor)._2)) {
+              cursor -= 1
+              word = (a(offset + cursor)._1.toString) + word
+            }
+            (word.length.toString, x._1, x._2)
+          }
+//          case 'C' => {    //class:space,punc,num,letter,date,symbol,character,other
+//
+//          }
         }
         l = t :: l
       }
@@ -198,7 +291,19 @@ class Feature(carg:(List[(String,Char,Int)],String)) {
         if(t._1 == p._2) 1 else 0
       }
       case 'p' => {
-        if(t._1 == p._3) 1 else 0
+        var i = 0
+        var word = ""
+        var cursor = 0
+        while(i > t._3)  {
+          while((index2 + cursor > 0) && !("SB" contains b(index2 + cursor)._2))
+            cursor -= 1
+          i-=1
+        }
+        if ((index2 + cursor > 0))
+          cursor -= 1
+        if ((index2 + cursor > 0))
+          word = b(index2 + cursor)._3
+        if (word eq t._1) 1 else 0
       }
       case 'u' => {
         val v = if(""" ?「」，。《》、：""" contains p._1) 1 else 0
@@ -210,6 +315,11 @@ class Feature(carg:(List[(String,Char,Int)],String)) {
       }
       case 'r' => {
         val p2 = b(index2+t._3 -1)
+        val v = if ((p._1) == (p2._1)) 1 else 0
+        if ("T" contains t._1) v else 1 - v
+      }
+      case 'R' => {
+        val p2 = b(index2+t._3 -2)
         val v = if ((p._1) == (p2._1)) 1 else 0
         if ("T" contains t._1) v else 1 - v
       }
@@ -230,6 +340,68 @@ class Feature(carg:(List[(String,Char,Int)],String)) {
           cursor -= 1
           word = (b(index2 + cursor)._1.toString) + word
         }
+        if (word eq t._1) 1 else 0
+      }
+      case 'b' => {
+        var i = 0
+        var word = ""
+        var cursor = 0
+        while(i > t._3)  {
+          while((index2 + cursor > 0) && !("SB" contains b(index2 + cursor)._2))
+            cursor -= 1
+          i-=1
+        }
+        if ((index2 + cursor > 0))
+          cursor -= 1
+        if ((index2 + cursor > 0))
+          word = (b(index2 + cursor)._1.toString) + word
+        while((index2 + cursor > 0)  && !("SB" contains b(index2 + cursor)._2)) {
+          cursor -= 1
+          word = (b(index2 + cursor)._1.toString) + word
+        }
+        if (word.length > 0)
+          word =word.charAt(0).toString
+        if (word eq t._1) 1 else 0
+      }
+      case 'e' => {
+        var i = 0
+        var word = ""
+        var cursor = 0
+        while(i > t._3)  {
+          while((index2 + cursor > 0) && !("SB" contains b(index2 + cursor)._2))
+            cursor -= 1
+          i-=1
+        }
+        if ((index2 + cursor > 0))
+          cursor -= 1
+        if ((index2 + cursor > 0))
+          word = (b(index2 + cursor)._1.toString) + word
+        while((index2 + cursor > 0)  && !("SB" contains b(index2 + cursor)._2)) {
+          cursor -= 1
+          word = (b(index2 + cursor)._1.toString) + word
+        }
+        if (word.length > 0)
+          word =word.last.toString
+        if (word eq t._1) 1 else 0
+      }
+      case 'l' => {
+        var i = 0
+        var word = ""
+        var cursor = 0
+        while(i > t._3)  {
+          while((index2 + cursor > 0) && !("SB" contains b(index2 + cursor)._2))
+            cursor -= 1
+          i-=1
+        }
+        if ((index2 + cursor > 0))
+          cursor -= 1
+        if ((index2 + cursor > 0))
+          word = (b(index2 + cursor)._1.toString) + word
+        while((index2 + cursor > 0)  && !("SB" contains b(index2 + cursor)._2)) {
+          cursor -= 1
+          word = (b(index2 + cursor)._1.toString) + word
+        }
+        word =word.length.toString
         if (word eq t._1) 1 else 0
       }
     }
