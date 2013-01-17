@@ -25,18 +25,24 @@ object Miao {
     //val text2 = Reader.seg2Read("dat/ctb7_mz_pos.utf8")
     var tag = Reader.TagRead("dat/ctb7_mz_pos_tags.utf8")
     val head = text.head
-    val template1= List(('w',-1))
-    println(template1)
-//    val template2= List(())
-    var unselected = List[List[(Char,Int)]]()
-    var selected = List[List[(Char,Int)]]()
-    var ftemplate1 = new FeatureTemplate(template1)
+    var alltemplate = List[List[(Char,Int)]]()
+    alltemplate  = List(('t',-1)) :: alltemplate
+    alltemplate  = List(('c',0)) :: alltemplate
+    println(alltemplate)
+    var featuresets = List[(List[(String,Char,Int)],String)]()
+
+    for(template <- alltemplate ) {
+      var ftemplate = new FeatureTemplate(template)
+      ftemplate.createFeature(text)
+      var featureset = ftemplate.list.toList
+      featuresets = featureset ::: featuresets
+    }
+
 //    var ftemplate2 = new FeatureTemplate(template2)
-    ftemplate1.createFeature(text)
 //    ftemplate2.createFeature(text)
-    var featuresets1 = ftemplate1.list.toList
+
 //    var featuresets2 = ftemplate2.list.toList
-    var featuresets = featuresets1 //::: featuresets2
+   // var featuresets = featuresets1 //::: featuresets2
     println("created,length=%s".format(featuresets.size))
     println(featuresets)
     var iis = new IIS3(featuresets,text,tag._1.toList)
