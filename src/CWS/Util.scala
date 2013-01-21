@@ -22,7 +22,7 @@ object util {
   type Point = (Char,String,String)
   type Feature = (List[(String,Char,Int)],String)
   type Window = (List[Point],Int)    //0index
-  val window = (-1,0)
+  val window = (-1,1)
   def slice(sentence:Array[util.Point],index:Int):Window={
     val t = Array.fill[Point](window._2 - window._1 +1 ){(0,"","")}
     (window._1 until (window._2+1)).foreach(x => {
