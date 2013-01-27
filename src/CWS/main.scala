@@ -22,12 +22,12 @@ object Miao {
 
   def m = {
     val text = Reader.segRead("dat/ctb7_mz_seg.utf8")
-    //val text2 = Reader.seg2Read("dat/ctb7_mz_pos.utf8")
+    val text2 = Reader.segRead("dat/ctb7_mz_seg_golden.utf8")
     var tag = Reader.TagRead("dat/ctb7_mz_pos_tags.utf8")
     val head = text.head
     var alltemplate = List[List[(Char,Int)]]()
-    alltemplate  = List(('c',-1),('c',1)) :: alltemplate
-    //alltemplate  = List(('c',0)) :: alltemplate
+//    alltemplate  = List(('t',0)) :: alltemplate
+    alltemplate  = List(('c',-1),('c',0)) :: alltemplate
     println(alltemplate)
     var featuresets = List[(List[(String,Char,Int)],String)]()
 
@@ -38,14 +38,10 @@ object Miao {
       featuresets = featureset ::: featuresets
     }
 
-//    var ftemplate2 = new FeatureTemplate(template2)
-//    ftemplate2.createFeature(text)
-
-//    var featuresets2 = ftemplate2.list.toList
-   // var featuresets = featuresets1 //::: featuresets2
+    //featuresets = (List(("I",'t',-1)),"B"):: featuresets
     println("created,length=%s".format(featuresets.size))
-    println(featuresets)
-    var iis = new IIS3(featuresets,text,tag._1.toList)
+//    println(featuresets)
+    var iis = new IIS3(featuresets,text2,tag._1.toList)
     println(iis.ll)
 
 //    while(!unselected.isEmpty) {

@@ -246,7 +246,7 @@ class Feature(carg:(List[(String,Char,Int)],String)) {
     arg.map(x => cal(b,index2,x)).reduce(_&_)
   }
   def checky(y:String) :Int = {
-    if(y equals this.y) 1 else 0
+    if(y contentEquals  this.y) 1 else 0
   }
   def run(b:Array[util.Point],index2:Int,y:String) :Int = {
     checkx(b,index2) & checky(y)

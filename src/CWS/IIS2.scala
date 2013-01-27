@@ -25,22 +25,22 @@ class IIS2 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
     l.toArray
   }
   println(xlist.length)
-  var xfreq = Array.fill[Int](xlist.length){0}                    //xindex ->xfreq
-  getxfreq()
-  def getxfreq() {
-    for (sentences <- text) {
-      for (xindex <- 0 until xlist.length) {
-        val f = new Feature((xlist(xindex),""))
-        var i = 0
-        while(i < sentences.length) {
-          if (f.checkx(sentences,i) == 1) {
-            xfreq(xindex) += 1
-          }
-          i += 1
-        }
-      }
-    }
-  }
+//  var xfreq = Array.fill[Int](xlist.length){0}                    //xindex ->xfreq
+//  getxfreq()
+//  def getxfreq() {
+//    for (sentences <- text) {
+//      for (xindex <- 0 until xlist.length) {
+//        val f = new Feature((xlist(xindex),""))
+//        var i = 0
+//        while(i < sentences.length) {
+//          if (f.checkx(sentences,i) == 1) {
+//            xfreq(xindex) += 1
+//          }
+//          i += 1
+//        }
+//      }
+//    }
+//  }
 
   val ylist = clabels.toArray                                       //yindex -> y
 
@@ -51,10 +51,17 @@ class IIS2 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
 //
 //    }
 //  }
-
-  var xyfreq = Array.fill[Int](xlist.length,ylist.length){0}                       //xyindex -> xyfreq
+def xfreq(xindex:Int):Double = {
+  var sum:Double = 0.0
+  for (yindex <-(0 until ylist.length)) {
+    sum += xyfreq(xindex)(yindex)
+  }
+  sum
+}
+  var xyfreq = Array.fill[Double](xlist.length,ylist.length){0}                       //xyindex -> xyfreq
   getxyfreq()
   def getxyfreq() {
+    var sum = 0.0
     for (sentences <- text) {
       for (xindex <- 0 until xlist.length) {
         for (yindex <- 0 until ylist.length) {
@@ -63,10 +70,16 @@ class IIS2 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
           while(i < sentences.length) {
             if (f.run(sentences,i,sentences(i)._2) == 1) {
               xyfreq(xindex)(yindex) += 1
+              sum += 1
             }
             i += 1
           }
         }
+      }
+    }
+    for (xindex <- 0 until xlist.length) {
+      for (yindex <- 0 until ylist.length) {
+        xyfreq(xindex)(yindex) /= sum
       }
     }
   }
@@ -82,7 +95,7 @@ class IIS2 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
   }
 
 
-  var featurefreq = Array.fill[Int](length){0}                  //fsindex->fsfreq
+  var featurefreq = Array.fill[Double](length){0}                  //fsindex->fsfreq
   getfeaturefreq()
   def getfeaturefreq() {
     for (findex <- 0 until length) {
@@ -111,13 +124,14 @@ class IIS2 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
   var alambda = Array.fill[Double](length){0.0}
   var ll :Double = 0.0
   trainiis()
+
   def loglihood() :Double ={
     var ll:Double = 0.0
     (0 until length).foreach(findex =>{
-      ll += alambda(findex)*(featurefreq(findex).toDouble)
+      ll += alambda(findex)*(featurefreq(findex))
     })
     for (xindex <- 0 until xlist.length) {
-      ll -= math.log(zlamdba(xindex)) * (xfreq(xindex).toDouble)
+      ll -= math.log(zlamdba(xindex)) * (xfreq(xindex))
     }
     ll
   }
@@ -136,6 +150,7 @@ class IIS2 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
     result /= zlamdba(xindex)
     result
   }
+
 
   def zlamdba(xindex:Int):Double = {
     // = sigmay(e(sigma(lamdbai*fi)))
@@ -170,6 +185,7 @@ class IIS2 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
     val para = getFormulaPara(findex)
     var t = 300
     val ffreq = featurefreq(findex)
+    println(getFormulaPara(findex).toString)
     while(t > 0){
       //delta = delta - g(delta)/g'(delta)
 //      | delta[i] -= (ffreq_empirical[i] - sum1[i])/(-sum2[i])
@@ -191,17 +207,27 @@ class IIS2 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
           //sum2 += abebx
           sum2 += xfreq(xindex) * para(xindex)._1 * para(xindex)._2 * math.exp(delta * para(xindex)._2)
       }
-      delta -= ((ffreq.toDouble - sum1))/(-sum2)
+      delta -= ((ffreq.toDouble - sum1))/(sum2)
       if (math.abs((ffreq - sum1)/(-sum2)) < 1e-16)
         t = 0
       t -= 1
     }
     delta
   }
-
+  def pf(findex:Int):Double = {
+    var sum = 0.0
+    for (xindex <- 0 until xlist.length) {
+      for (yindex <- 0 until ylist.length) {
+        if(features(findex).run(xlist(xindex),ylist(yindex)) == 1) {
+          sum += xfreq(xindex) * calpyx(xindex,yindex)
+        }
+        }
+      }
+    sum
+  }
   def trainiis() {
      var i = 0
-    while(i < 100){
+    while(i < 3){
       var stop = true
       for (j <- 0 until length){
         var delta = calculateDelta(j)
@@ -217,6 +243,9 @@ class IIS2 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
         print("%f ".format(zlamdba(xindex)))
       }
       println()
+      for(findex <- 0 until length) {
+        printf("%f %f \n".format(featurefreq(findex),pf(findex)))
+      }
       println("-iter %d------------".format(i))
       if (stop)
         i = 10000

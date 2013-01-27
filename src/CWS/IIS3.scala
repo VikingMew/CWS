@@ -1,5 +1,6 @@
 package CWS
 
+import scala.util.Random
 
 /**
 * Created with IntelliJ IDEA.
@@ -29,32 +30,42 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
     l.toArray
   }
   println(xlist.length)
-  var xfreq = Array.fill[Int](xlist.length){0}                    //xindex ->xfreq
-  getxfreq()
-  def getxfreq() {
-    for (sentences <- text) {
-      for (xindex <- 0 until xlist.length) {
-        var i = 0
-        while(i < sentences.length) {
-          var t = util.slice(sentences,i)
-          if (util.comparex(t,xlist(xindex))) {
-            xfreq(xindex) += 1
-          }
-          i += 1
-        }
-      }
-    }
-    for (xindex <- 0 until xlist.length) {
-      if (xfreq(xindex) == 0)
-        println("!!!")
-    }
+//  var xfreq = Array.fill[Double](xlist.length){0}                    //xindex ->xfreq
+//  getxfreq()
+//  def getxfreq() {
+//    for (sentences <- text) {
+//      for (xindex <- 0 until xlist.length) {
+//        var i = 0
+//        while(i < sentences.length) {
+//          var t = util.slice(sentences,i)
+//          if (util.comparex(t,xlist(xindex))) {
+//            xfreq(xindex) += 1
+//          }
+//          i += 1
+//        }
+//      }
+//    }
+//    for (xindex <- 0 until xlist.length) {
+//      if (xfreq(xindex) == 0)
+//        println("!!!")
+//    }
+//
+//  }
+//
+def xfreq(xindex:Int):Double = {
+  var sum:Double = 0.0
+  for (yindex <-(0 until ylist.length)) {
+    sum += xyfreq(xindex)(yindex)
   }
-  println("miao")
+  sum
+}
+
   val ylist = clabels.toArray                                       //yindex -> y
 
-  var xyfreq = Array.fill[Int](xlist.length,ylist.length){0}                       //xyindex -> xyfreq
+  var xyfreq = Array.fill[Double](xlist.length,ylist.length){0}                       //xyindex -> xyfreq
   getxyfreq()
   def getxyfreq() {
+    var sum = 0.0
     for (sentences <- text) {
       for (xindex <- 0 until xlist.length) {
         for (yindex <- 0 until ylist.length) {
@@ -64,14 +75,21 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
             if (util.comparex(t,xlist(xindex)) && sentences(i)._2 == ylist(yindex))
             {
               xyfreq(xindex)(yindex) += 1
+              sum += 1
             }
             i += 1
           }
         }
       }
     }
+    for (xindex <- 0 until xlist.length) {
+      for (yindex <- 0 until ylist.length) {
+            xyfreq(xindex)(yindex) /= sum
+      }
+    }
+    println(sum)
   }
-  println("miao")
+//  println("miao")
   var features = new Array[Feature](length)
   setfeature()
   def setfeature() {
@@ -95,25 +113,25 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
 //    })
 //  }
 
-  var featurefreq = Array.fill[Int](length){0}                  //fsindex->fsfreq
+  var featurefreq = Array.fill[Double](length){0}                  //fsindex->fsfreq
   getfeaturefreq()
   def getfeaturefreq() {
     for (findex <- 0 until length) {
       for(xindex <- 0 until xlist.length) {
         for (yindex <- 0 until ylist.length) {
             //featurefreq(findex) += xyfreq(xindex)(yindex) * xyfeaturemap(xindex)(yindex)(findex)
-                    if (features(findex).run(xlist(xindex)._1.toArray,xlist(xindex)._2,ylist(yindex)) == 1) {
-                      featurefreq(findex) += xyfreq(xindex)(yindex)
-                    }
+            if (features(findex).run(xlist(xindex)._1.toArray,xlist(xindex)._2,ylist(yindex)) == 1) {
+              featurefreq(findex) += xyfreq(xindex)(yindex)
+              }
         }
       }
     }
-    for (findex <- 0 until length) {
-      if (featurefreq(findex) == 0)
-        println("!!!")
-    }
+//    for (findex <- 0 until length) {
+//      if (featurefreq(findex) == 0)
+//        println("%d".format(findex))
+//    }
   }
-
+  var sumfeaturefreq = featurefreq.sum
   var fsharp = Array.fill[Int](xlist.length,ylist.length){0}
   getfsharp()
   def getfsharp() {
@@ -135,16 +153,28 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
   def loglihood() :Double ={
     // =
     var ll:Double = 0.0
-    (0 until length).foreach(findex =>{
-      ll += alambda(findex)*(featurefreq(findex).toDouble)
-    })
+//    println("likeliehood-------")
+//    (0 until length).foreach(findex =>{
+//      ll += alambda(findex)*(featurefreq(findex))
+////      print("%f ".format(alambda(findex)*(featurefreq(findex))))
+//    })
+//    println()
 //    ll += (alambda,featurefreq).zipped.map((x,y)=>{(y.toDouble) * x}).sum
-    for (xindex <- 0 until xlist.length) {
-      ll -= math.log(zlamdba(xindex)) * (xfreq(xindex).toDouble)
+//    for (xindex <- 0 until xlist.length) {
+//      ll -= math.log(zlamdba(xindex)) * (xfreq(xindex))
+//      print("%f ".format(math.log(zlamdba(xindex))))
+//    }
+//    println("likeliehood-------")
+    //~ ~(x, y) log p(ylx)
+    for(xindex <- 0 until xlist.length) {
+      for(yindex <- 0 until ylist.length) {
+        ll += xyfreq(xindex)(yindex) * math.log(calpyx(xindex,yindex))
+      }
     }
     ll
   }
 
+//
 
   def calpyx(xindex:Int,yindex:Int): Double = {
     //plamdba(y|x)=(1/Z(lambda,x)) * e(sigma(lambdai*fi))
@@ -161,6 +191,7 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
 //    sum = (xyfeaturemap(xindex)(yindex),alambda).zipped.map((x,y)=>{(x.toDouble)*y}).sum
     result *= math.exp(sum)
     result /= zlamdba(xindex)
+    if(result > 1) print("!!!")
     result
   }
 
@@ -204,7 +235,10 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
     val para = getFormulaPara(findex)
 
     var t = 300
-    val ffreq = featurefreq(findex)
+    val ffreq = featurefreq(findex) // sumxfreq
+    if(ffreq == 0) {
+      return 0
+    }
     while(t > 0){
       //delta = delta - g(delta)/g'(delta)
 //      | delta[i] -= (ffreq_empirical[i] - sum1[i])/(-sum2[i])
@@ -222,9 +256,9 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
       //sum2 = abebx+cdedx
       for(xindex <- 0 until xlist.length) {
           //sum1 += aebx
-          sum1 += xfreq(xindex) * para(xindex)._1 * math.exp(delta * para(xindex)._2)
+          sum1 += xfreq(xindex) * para(xindex)._1 * math.exp(delta * para(xindex)._2) // sumxfreq
           //sum2 += abebx
-          sum2 += xfreq(xindex) * para(xindex)._1 * para(xindex)._2 * math.exp(delta * para(xindex)._2)
+          sum2 += xfreq(xindex) * para(xindex)._1 * para(xindex)._2 * math.exp(delta * para(xindex)._2) // sumxfreq
       }
       delta -= ((ffreq.toDouble - sum1))/(-sum2)
       if (math.abs((ffreq - sum1)/(-sum2)) < 1e-16)
@@ -236,31 +270,39 @@ class IIS3 (cfeatureset:List[(List[(String,Char,Int)],String)],ctext:List[Array[
 
   def trainiis() {
      var i = 0
-    while(i < 1000){
-      var stop = true
-      for (j <- 0 until length){
+    var oldll = 0.0
+    while(i < 100){
+//      var stop = true
+      //val j = Random.nextInt(length)
+      for(j <- 0 until length)
+      {
         var delta = calculateDelta(j)
         if (delta.isNaN)
         {
           printf("!!!!!%d".format(j))
         }
+
         alambda(j) += delta
-        if (delta > 1e-16)
-          stop = false
+//        if (delta > 1e-16)
+//          stop = false
       }
       println("-iter %d------------".format(i))
 //      println(alambda.mkString(" "))
+      oldll = ll
       ll= loglihood()
       println(ll)
+     // print(alambda(j))
 //      for (xindex <- 0 until xlist.length) {
 //        print("%f ".format(zlamdba(xindex)))
 //      }
 //      println()
       println("-iter %d------------".format(i))
-      if (stop)
-        i = 1000
+//      if (stop)
+//        i = 100
       i += 1
     }
+    ll= loglihood()
   }
+
 }
 
