@@ -26,8 +26,8 @@ object Miao {
     var tag = Reader.TagRead("dat/ctb7_mz_pos_tags.utf8")
     val head = text.head
     var alltemplate = List[List[(Char,Int)]]()
-//    alltemplate  = List(('t',0)) :: alltemplate
-    alltemplate  = List(('c',-1),('c',0)) :: alltemplate
+    alltemplate  = List(('t',-1)) :: alltemplate
+//    alltemplate  = List(('c',0)) :: alltemplate
     println(alltemplate)
     var featuresets = List[(List[(String,Char,Int)],String)]()
 
